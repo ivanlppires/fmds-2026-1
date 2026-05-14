@@ -1,29 +1,30 @@
 <template>
-  <h2>Aula 02 - VueJs</h2>
-  <p>Seja bem vindo {{ nameRef }}</p>
+  <div v-show="loggedIn">
+    <h1 style="border-bottom:2px dotted blue">Sistema do Ivan</h1>
+  </div>
+  <div v-if="loggedIn">
+    <p>Seja bem vindo ao meu site!</p>
+    <input v-model="newItem">
+    <button @click="addItem">Adicionar Item</button>
 
-  <!-- @ = v-on serve para lidar com eventos do DOM -->
-  <button @click="save">Salvar</button>
+    <!-- v-for -->
+     <p v-for="(item, index) in items" :key="index"> - {{  item }}</p>
 
-  <!-- : = v-bind serve para trazer o valor da variável pra cá -->
-  <font :color="cor">Texto colorido </font>
-
-  <!-- v-model two-way data bind -->
-   <input v-model="nameRef" >
-
+    <button @click="loggedIn = false">Sair</button>
+  </div>
+  <div v-else>
+    <input placeholder="usuario">
+    <input placeholder="senha" type="password">
+    <button @click="loggedIn = true">Login</button>
+  </div>
 </template>
+
 <script setup>
-  import { ref } from 'vue';
-
-  // Variável javascript
-  let name = 'Ivan Luiz';
-  // name = prompt('Digite seu nome');
-  const nameRef = ref('Ivan Pires');
-  // console.log(name);
-  // console.log(nameRef.value);
-
-  const save = () =>  window.alert('Salvo com Sucesso!');
-
-  const cor = 'blue';
-
-  </script>
+import { ref } from 'vue';
+const loggedIn = ref(true);
+const items = ref(['Item 1', 'Item 2', 'Item 3']);
+const newItem = ref('');
+const addItem = () => {
+  items.value.push(newItem.value);
+}
+</script>
