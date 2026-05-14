@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Atividade Prática Vue.js — CRUD de Cadastro de Alunos</title>
+<style>
+  @page {
+    size: A4;
+    margin: 2cm 2cm 2.2cm 2cm;
+    @bottom-center {
+      content: "Página " counter(page) " de " counter(pages);
+      font-family: 'Helvetica', sans-serif;
+      font-size: 9pt;
+      color: #6b7280;
+    }
+    @bottom-right {
+      content: "FMDS — UNEMAT 2026/1";
+      font-family: 'Helvetica', sans-serif;
+      font-size: 9pt;
+      color: #6b7280;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: 'Helvetica', 'Arial', sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.5;
+    color: #1f2937;
+    margin: 0;
+  }
+
+  .header {
+    border-bottom: 3px solid #41B883;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo {
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, #41B883 0%, #35495E 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 24pt;
+    flex-shrink: 0;
+  }
+
+  .header-text h1 {
+    margin: 0;
+    font-size: 16pt;
+    color: #35495E;
+    letter-spacing: -0.3px;
+  }
+  .header-text .subtitle {
+    color: #6b7280;
+    font-size: 10pt;
+    margin-top: 2px;
+  }
+
+  .meta {
+    background: #f3f4f6;
+    border-left: 4px solid #41B883;
+    padding: 10px 14px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+    font-size: 9.5pt;
+  }
+  .meta table { width: 100%; border-collapse: collapse; }
+  .meta td { padding: 2px 0; vertical-align: top; }
+  .meta td:first-child { width: 130px; font-weight: bold; color: #35495E; }
+
+  h2 {
+    color: #35495E;
+    font-size: 12.5pt;
+    border-bottom: 1.5px solid #e5e7eb;
+    padding-bottom: 4px;
+    margin-top: 16px;
+    margin-bottom: 8px;
+  }
+  h3 {
+    color: #41B883;
+    font-size: 11pt;
+    margin-top: 12px;
+    margin-bottom: 6px;
+  }
+
+  p { margin: 6px 0; }
+
+  .instructions {
+    background: #fef9e7;
+    border: 1px solid #f9d976;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 9.5pt;
+    margin-bottom: 14px;
+  }
+  .instructions ul { margin: 4px 0 0 0; padding-left: 18px; }
+  .instructions li { margin: 2px 0; }
+
+  code {
+    background: #f3f4f6;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 9.5pt;
+    color: #c0392b;
+  }
+
+  pre {
+    background: #1e293b;
+    color: #f8fafc;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 8.8pt;
+    line-height: 1.45;
+    margin: 6px 0;
+    page-break-inside: avoid;
+    white-space: pre;
+  }
+  pre .tag { color: #fb7185; }
+  pre .attr { color: #fbbf24; }
+  pre .str { color: #86efac; }
+  pre .kw { color: #c4b5fd; }
+  pre .com { color: #94a3b8; font-style: italic; }
+  pre .fn { color: #7dd3fc; }
+
+  .blanks {
+    display: inline-block;
+    border-bottom: 1.2px solid #6b7280;
+    min-width: 80px;
+    padding: 0 4px;
+  }
+
+  /* Wireframe / mockup */
+  .mockup {
+    border: 2px solid #35495E;
+    border-radius: 8px;
+    padding: 0;
+    margin: 8px 0;
+    background: #fafafa;
+    page-break-inside: avoid;
+  }
+  .mockup-bar {
+    background: #35495E;
+    color: white;
+    padding: 4px 10px;
+    font-size: 9pt;
+    font-family: 'Courier New', monospace;
+  }
+  .mockup-body {
+    padding: 10px 14px;
+    font-size: 9.5pt;
+  }
+  .mockup-field {
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 3px;
+    padding: 3px 8px;
+    margin: 3px 0;
+    display: inline-block;
+    min-width: 180px;
+    color: #94a3b8;
+  }
+  .mockup-btn {
+    background: #41B883;
+    color: white;
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-size: 9pt;
+    display: inline-block;
+    margin: 0 2px;
+  }
+  .mockup-btn.danger { background: #ef4444; }
+  .mockup-btn.warn { background: #f59e0b; }
+  .mockup-btn.muted { background: #6b7280; }
+  .mockup-row {
+    background: white;
+    border: 1px solid #e5e7eb;
+    padding: 4px 8px;
+    margin: 2px 0;
+    border-radius: 3px;
+    font-size: 9.5pt;
+  }
+
+  .requirements {
+    border: 1px solid #41B883;
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 8px 0;
+  }
+  .requirements-head {
+    background: #41B883;
+    color: white;
+    padding: 6px 12px;
+    font-weight: bold;
+    font-size: 10.5pt;
+  }
+  .requirements-body { padding: 8px 14px; background: white; }
+  .requirements-body ul { margin: 4px 0; padding-left: 18px; }
+  .requirements-body li { margin: 3px 0; }
+
+  table.criteria {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 6px 0;
+    font-size: 9.5pt;
+  }
+  table.criteria th, table.criteria td {
+    border: 1px solid #cbd5e1;
+    padding: 5px 8px;
+    text-align: left;
+    vertical-align: top;
+  }
+  table.criteria th {
+    background: #35495E;
+    color: white;
+  }
+  table.criteria td.pts {
+    text-align: center;
+    width: 70px;
+    background: #f9fafb;
+    font-weight: bold;
+    color: #41B883;
+  }
+  table.criteria tr.total td {
+    background: #41B883;
+    color: white;
+    font-weight: bold;
+  }
+
+  .checklist {
+    background: #f0fdf4;
+    border: 1px dashed #41B883;
+    border-radius: 6px;
+    padding: 8px 14px;
+    margin: 8px 0;
+    font-size: 9.5pt;
+  }
+  .checklist .item { margin: 3px 0; }
+  .checklist .box {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 1.5px solid #35495E;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  .tip {
+    background: #eff6ff;
+    border-left: 3px solid #3b82f6;
+    padding: 6px 10px;
+    margin: 6px 0;
+    font-size: 9.5pt;
+    border-radius: 0 4px 4px 0;
+  }
+  .tip strong { color: #1d4ed8; }
+
+  .meme-section {
+    margin-top: 20px;
+    page-break-inside: avoid;
+    text-align: center;
+  }
+  .meme-section h2 {
+    border: none;
+    text-align: center;
+    color: #41B883;
+  }
+
+  .meme {
+    border: 3px solid #1f2937;
+    border-radius: 8px;
+    background: #fff;
+    max-width: 460px;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+  .meme-row {
+    display: flex;
+    border-bottom: 3px solid #1f2937;
+  }
+  .meme-row:last-child { border-bottom: none; }
+  .meme-panel {
+    flex: 1;
+    padding: 14px 10px;
+    text-align: center;
+    min-height: 110px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-right: 3px solid #1f2937;
+  }
+  .meme-panel:last-child { border-right: none; }
+  .meme-face {
+    font-size: 36pt;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .meme-caption {
+    font-weight: bold;
+    font-size: 9pt;
+    color: #1f2937;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .meme-caption-2 {
+    margin-top: 12px;
+    font-weight: bold;
+    color: #35495E;
+    font-style: italic;
+    font-size: 10pt;
+  }
+
+  .footer-note {
+    margin-top: 16px;
+    text-align: center;
+    font-size: 9pt;
+    color: #6b7280;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">V</div>
+  <div class="header-text">
+    <h1>Atividade Prática — CRUD de Cadastro de Alunos em Vue 3</h1>
+    <div class="subtitle">Aplicando todas as diretivas estudadas em sala</div>
+  </div>
+</div>
+
+<div class="meta">
+  <table>
+    <tr><td>Disciplina:</td><td>Frameworks Modernos para Desenvolvimento de Sistemas (FACET-SNP-310)</td></tr>
+    <tr><td>Professor:</td><td>Ivan Luiz Pedroso Pires</td></tr>
+    <tr><td>Curso/Semestre:</td><td>Sistemas de Informação — UNEMAT — 2026/1</td></tr>
+    <tr><td>Valor:</td><td>1,0 ponto (compõe a Nota 2)</td></tr>
+    <tr><td>Tempo estimado:</td><td>30 minutos</td></tr>
+    <tr><td>Modalidade:</td><td>Individual ou em dupla</td></tr>
+    <tr><td>Entrega:</td><td>Hoje, até 22h00 — via SIGAA (tarefa específica)</td></tr>
+    <tr><td>Dificuldade:</td><td>Média</td></tr>
+  </table>
+</div>
+
+<div style="margin-bottom: 10px;">
+  <strong>Aluno(a) 1:</strong> <span class="blanks" style="min-width:260px"></span> &nbsp;
+  <strong>Matrícula:</strong> <span class="blanks" style="min-width:110px"></span>
+</div>
+<div style="margin-bottom: 14px;">
+  <strong>Aluno(a) 2:</strong> <span class="blanks" style="min-width:260px"></span> &nbsp;
+  <strong>Matrícula:</strong> <span class="blanks" style="min-width:110px"></span>
+</div>
+
+<h2>1. Objetivo</h2>
+<p>
+  Construir um pequeno <strong>CRUD</strong> (Create / Read / Update / Delete) de <strong>Cadastro de Alunos</strong>
+  em <strong>Vue 3</strong> com <code>&lt;script setup&gt;</code> (Composition API), aplicando
+  <strong>obrigatoriamente</strong> todas as diretivas vistas em sala:
+  <code>ref()</code>, interpolação <code>{{ }}</code>, <code>v-if</code>, <code>v-else</code>,
+  <code>v-show</code>, <code>v-for</code> (mais <code>v-model</code> e <code>@click</code> já usados).
+</p>
+
+<h2>2. Modelo de Aluno</h2>
+<p>Cada aluno cadastrado deve conter, no mínimo, os seguintes campos:</p>
+<pre><span class="kw">const</span> aluno = {
+  id:        <span class="str">1</span>,                <span class="com">// número único (use Date.now() ou contador)</span>
+  nome:      <span class="str">'Maria Souza'</span>,    <span class="com">// string</span>
+  matricula: <span class="str">'2026001'</span>,        <span class="com">// string</span>
+  curso:     <span class="str">'Sistemas de Informação'</span>,
+  ativo:     <span class="kw">true</span>             <span class="com">// boolean — aluno ativo na disciplina?</span>
+};</pre>
+
+<h2>3. Telas esperadas (referência visual)</h2>
+
+<div class="mockup">
+  <div class="mockup-bar">Tela A — Lista com alunos cadastrados</div>
+  <div class="mockup-body">
+    <strong>Total de alunos: 3</strong> &nbsp;
+    <span class="mockup-btn">+ Novo aluno</span>
+    <span class="mockup-btn muted">Mostrar formulário</span>
+    <div class="mockup-row">#1 — Maria Souza | 2026001 | SI | Ativo &nbsp;&nbsp; <span class="mockup-btn warn">Editar</span> <span class="mockup-btn danger">Excluir</span></div>
+    <div class="mockup-row">#2 — João Lima  | 2026002 | SI | Inativo &nbsp; <span class="mockup-btn warn">Editar</span> <span class="mockup-btn danger">Excluir</span></div>
+    <div class="mockup-row">#3 — Ana Pires  | 2026003 | SI | Ativo &nbsp;&nbsp; <span class="mockup-btn warn">Editar</span> <span class="mockup-btn danger">Excluir</span></div>
+  </div>
+</div>
+
+<div class="mockup">
+  <div class="mockup-bar">Tela B — Lista vazia (sem alunos cadastrados)</div>
+  <div class="mockup-body" style="text-align:center; color:#6b7280; font-style:italic;">
+    "Nenhum aluno cadastrado ainda. Cadastre o primeiro!" <br>
+    <span class="mockup-btn">+ Novo aluno</span>
+  </div>
+</div>
+
+<div class="mockup">
+  <div class="mockup-bar">Tela C — Formulário visível (cadastrar ou editar)</div>
+  <div class="mockup-body">
+    Nome: <span class="mockup-field">Maria Souza</span><br>
+    Matrícula: <span class="mockup-field">2026001</span><br>
+    Curso: <span class="mockup-field">Sistemas de Informação</span><br>
+    Ativo: <span class="mockup-field" style="min-width:30px">☑</span><br>
+    <span class="mockup-btn">Salvar</span> <span class="mockup-btn muted">Cancelar</span>
+  </div>
+</div>
+
+<h2>4. Requisitos funcionais</h2>
+
+<div class="requirements">
+  <div class="requirements-head">RF — O que o sistema deve fazer</div>
+  <div class="requirements-body">
+    <ul>
+      <li><strong>RF1 (Create):</strong> permitir cadastrar um novo aluno preenchendo nome, matrícula, curso e status (ativo).</li>
+      <li><strong>RF2 (Read):</strong> listar todos os alunos cadastrados, mostrando posição (#1, #2, ...), nome, matrícula, curso e status.</li>
+      <li><strong>RF3 (Update):</strong> permitir editar qualquer aluno já cadastrado e salvar as alterações.</li>
+      <li><strong>RF4 (Delete):</strong> permitir excluir um aluno da lista.</li>
+      <li><strong>RF5:</strong> exibir o <em>total</em> de alunos cadastrados no topo da tela.</li>
+      <li><strong>RF6:</strong> quando a lista estiver vazia, mostrar uma mensagem amigável no lugar da tabela/lista.</li>
+      <li><strong>RF7:</strong> o formulário de cadastro/edição deve poder ser <em>mostrado/ocultado</em> por um botão.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>5. Requisitos técnicos — uso OBRIGATÓRIO das diretivas</h2>
+
+<div class="checklist">
+  <div class="item"><span class="box"></span> <strong><code>ref()</code></strong> — para a lista de alunos e para os campos do formulário (nome, matrícula, curso, ativo).</div>
+  <div class="item"><span class="box"></span> <strong>Interpolação <code>{{ }}</code></strong> — para exibir o total de alunos e os dados de cada aluno na lista.</div>
+  <div class="item"><span class="box"></span> <strong><code>v-if</code> / <code>v-else</code></strong> — para alternar entre exibir a <em>lista</em> de alunos e a <em>mensagem de lista vazia</em>; e/ou para alternar o título/botão entre os modos "Cadastrar" e "Editar".</div>
+  <div class="item"><span class="box"></span> <strong><code>v-show</code></strong> — para mostrar/ocultar o <em>formulário</em> ao clicar em "Mostrar/Ocultar formulário".</div>
+  <div class="item"><span class="box"></span> <strong><code>v-for</code></strong> — para percorrer a lista de alunos. <strong>Use <code>:key</code> com o <code>id</code> do aluno.</strong></div>
+  <div class="item"><span class="box"></span> <strong><code>v-model</code></strong> + <strong><code>@click</code></strong> — para os campos do formulário e para os botões de Salvar, Cancelar, Editar e Excluir.</div>
+</div>
+
+<div class="tip">
+  <strong>Dica de implementação:</strong> use uma variável <code>const editandoId = ref(null)</code> para saber se está cadastrando um aluno novo (<code>null</code>) ou editando um já existente (<code>id</code> do aluno). Isso resolve o <code>v-if</code>/<code>v-else</code> do título "Cadastrar" vs "Editar" e a lógica do botão Salvar.
+</div>
+
+<h2>6. Esqueleto inicial (para começar)</h2>
+
+<pre><span class="tag">&lt;template&gt;</span>
+  <span class="tag">&lt;h1&gt;</span>Cadastro de Alunos<span class="tag">&lt;/h1&gt;</span>
+  <span class="tag">&lt;p&gt;</span>Total de alunos: {{ <span class="com">/* ??? */</span> }}<span class="tag">&lt;/p&gt;</span>
+  <span class="tag">&lt;button</span> <span class="attr">@click</span>=<span class="str">"mostrarForm = !mostrarForm"</span><span class="tag">&gt;</span>...<span class="tag">&lt;/button&gt;</span>
+
+  <span class="com">&lt;!-- Formulário (use v-show) --&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">v-show</span>=<span class="str">"mostrarForm"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;h2</span> <span class="attr">v-if</span>=<span class="str">"editandoId === null"</span><span class="tag">&gt;</span>Cadastrar<span class="tag">&lt;/h2&gt;</span>
+    <span class="tag">&lt;h2</span> <span class="attr">v-else</span><span class="tag">&gt;</span>Editar<span class="tag">&lt;/h2&gt;</span>
+    <span class="com">&lt;!-- inputs com v-model: nome, matricula, curso, ativo --&gt;</span>
+    <span class="com">&lt;!-- botões Salvar / Cancelar --&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+
+  <span class="com">&lt;!-- Lista (use v-if / v-else + v-for) --&gt;</span>
+  <span class="tag">&lt;ul</span> <span class="attr">v-if</span>=<span class="str">"alunos.length &gt; 0"</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;li</span> <span class="attr">v-for</span>=<span class="str">"(a, i) in alunos"</span> <span class="attr">:key</span>=<span class="str">"a.id"</span><span class="tag">&gt;</span>
+      #{{ i + 1 }} — {{ a.nome }} | {{ a.matricula }} | {{ a.curso }} |
+      {{ a.ativo ? 'Ativo' : 'Inativo' }}
+      <span class="tag">&lt;button</span> <span class="attr">@click</span>=<span class="str">"editar(a)"</span><span class="tag">&gt;</span>Editar<span class="tag">&lt;/button&gt;</span>
+      <span class="tag">&lt;button</span> <span class="attr">@click</span>=<span class="str">"excluir(a.id)"</span><span class="tag">&gt;</span>Excluir<span class="tag">&lt;/button&gt;</span>
+    <span class="tag">&lt;/li&gt;</span>
+  <span class="tag">&lt;/ul&gt;</span>
+  <span class="tag">&lt;p</span> <span class="attr">v-else</span><span class="tag">&gt;</span>Nenhum aluno cadastrado ainda.<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;/template&gt;</span>
+
+<span class="tag">&lt;script setup&gt;</span>
+<span class="kw">import</span> { ref } <span class="kw">from</span> <span class="str">'vue'</span>;
+
+<span class="kw">const</span> alunos       = <span class="fn">ref</span>([]);   <span class="com">// lista de alunos</span>
+<span class="kw">const</span> mostrarForm  = <span class="fn">ref</span>(<span class="kw">false</span>);
+<span class="kw">const</span> editandoId  = <span class="fn">ref</span>(<span class="kw">null</span>);
+<span class="kw">const</span> nome        = <span class="fn">ref</span>(<span class="str">''</span>);
+<span class="kw">const</span> matricula   = <span class="fn">ref</span>(<span class="str">''</span>);
+<span class="kw">const</span> curso       = <span class="fn">ref</span>(<span class="str">''</span>);
+<span class="kw">const</span> ativo       = <span class="fn">ref</span>(<span class="kw">true</span>);
+
+<span class="kw">function</span> <span class="fn">salvar</span>()   { <span class="com">/* implemente */</span> }
+<span class="kw">function</span> <span class="fn">editar</span>(a)  { <span class="com">/* implemente */</span> }
+<span class="kw">function</span> <span class="fn">excluir</span>(id) { <span class="com">/* implemente */</span> }
+<span class="kw">function</span> <span class="fn">limpar</span>()   { <span class="com">/* limpa o formulário */</span> }
+<span class="tag">&lt;/script&gt;</span></pre>
+
+<h2>7. Critérios de avaliação</h2>
+
+<table class="criteria">
+  <tr>
+    <th>Critério</th>
+    <th>O que avaliamos</th>
+    <th class="pts">Pontos</th>
+  </tr>
+  <tr>
+    <td>Uso correto de <code>ref()</code></td>
+    <td>Lista e campos do formulário declarados como <code>ref</code>; acesso via <code>.value</code> no script.</td>
+    <td class="pts">0,10</td>
+  </tr>
+  <tr>
+    <td>Interpolação <code>{{ }}</code></td>
+    <td>Total de alunos e dados dos itens exibidos via interpolação no template.</td>
+    <td class="pts">0,10</td>
+  </tr>
+  <tr>
+    <td><code>v-if</code> / <code>v-else</code></td>
+    <td>Alternância entre lista cheia × mensagem de "lista vazia", e/ou entre modo Cadastrar × Editar.</td>
+    <td class="pts">0,15</td>
+  </tr>
+  <tr>
+    <td><code>v-show</code></td>
+    <td>Formulário aparece/oculta via <code>v-show</code> ao clicar no botão.</td>
+    <td class="pts">0,10</td>
+  </tr>
+  <tr>
+    <td><code>v-for</code> com <code>:key</code></td>
+    <td>Lista renderizada com <code>v-for</code>, índice e <code>:key</code> usando o <code>id</code>.</td>
+    <td class="pts">0,15</td>
+  </tr>
+  <tr>
+    <td>CRUD funcional</td>
+    <td>Criar, listar, editar e excluir alunos funcionam de ponta a ponta sem erros no console.</td>
+    <td class="pts">0,30</td>
+  </tr>
+  <tr>
+    <td>Organização do código</td>
+    <td>Nomes coerentes, indentação consistente, sem código morto. Pode usar CSS simples.</td>
+    <td class="pts">0,10</td>
+  </tr>
+  <tr class="total">
+    <td colspan="2" style="text-align:right;">TOTAL</td>
+    <td class="pts" style="color:white;">1,00</td>
+  </tr>
+</table>
+
+<h2>8. Formato de entrega</h2>
+<ol style="margin: 4px 0; padding-left: 20px;">
+  <li>Crie um novo projeto Vue 3 com Vite. Sugestão de comando: <code>bun create vue@latest cadastro-alunos</code> (ou <code>npm create vue@latest</code>).</li>
+  <li>Implemente todo o CRUD dentro de <code>src/App.vue</code>.</li>
+  <li>Antes de enviar: <strong>compacte a pasta do projeto sem a <code>node_modules</code></strong> (arquivo <code>.zip</code>).</li>
+  <li>Renomeie o arquivo para: <code>fmds_atividade_crud_NOME1_NOME2.zip</code>.</li>
+  <li>Envie na tarefa correspondente do <strong>SIGAA até 22h00 de hoje</strong>. Apenas uma pessoa da dupla envia, com os dois nomes citados no arquivo.</li>
+</ol>
+
+<div class="tip">
+  <strong>Atalho válido:</strong> se preferir, pode entregar apenas o arquivo <code>App.vue</code> (não compactado) — desde que ele rode em qualquer projeto Vue 3 padrão (Vite + Composition API).
+</div>
+
+<!-- MEME -->
+<div class="meme-section">
+  <h2>Bônus moral — o meme do CRUD</h2>
+
+  <div class="meme">
+    <div class="meme-row">
+      <div class="meme-panel" style="background:#fee2e2;">
+        <div class="meme-face">&#x1F62D;</div>
+        <div class="meme-caption">Eu, prometendo<br>"é só um CRUD<br>simples, 10 minutos"</div>
+      </div>
+      <div class="meme-panel" style="background:#dcfce7;">
+        <div class="meme-face">&#x23F0;</div>
+        <div class="meme-caption">3 horas depois,<br>brigando com o<br>:key do v-for</div>
+      </div>
+    </div>
+    <div class="meme-row">
+      <div class="meme-panel" style="background:#fef3c7; flex: 2;">
+        <div class="meme-face">&#x1F914;&#x1F4A1;</div>
+        <div class="meme-caption" style="font-size:10pt;">
+          "Por que meu input não atualiza?"<br>
+          <em>(esqueceu o .value no script)</em>
+        </div>
+      </div>
+    </div>
+    <div class="meme-row">
+      <div class="meme-panel" style="background:#e0e7ff;">
+        <div class="meme-face">&#x1F9D1;&#x200D;&#x1F4BB;</div>
+        <div class="meme-caption">Aluno: "fiz<br>um CRUD<br>em Vue"</div>
+      </div>
+      <div class="meme-panel" style="background:#fce7f3;">
+        <div class="meme-face">&#x1F4BC;</div>
+        <div class="meme-caption">Mercado:<br>"contratado<br>como sênior"</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="meme-caption-2">
+    "Todo CRUD começa simples. Todo CRUD termina com um botão chamado 'gambiarra'." — Provérbio Vue
+  </div>
+</div>
+
+<div class="footer-note">
+  Boa codada! &nbsp;✦&nbsp; Entrega: SIGAA até <strong>22h00</strong> de hoje. &nbsp;✦&nbsp; Dúvida? Pergunte no grupo da turma.
+</div>
+
+</body>
+</html>
