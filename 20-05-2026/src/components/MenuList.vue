@@ -14,7 +14,7 @@
 
   
   <v-list :lines="false" density="compact" nav>
-    <v-list-item v-for="(item, i) in items" :key="i" :value="item" color="primary">
+    <v-list-item v-for="(item, i) in items" :key="i" :value="item" color="primary" :to="item.to">
       <template v-slot:prepend>
         <v-icon :icon="item.icon"></v-icon>
       </template>
@@ -25,9 +25,9 @@
 </template>
 <script setup>
 const items = [
-  { text: 'Página Inicial', icon: 'mdi-home-account' },
-  { text: 'Produtos', icon: 'mdi-rocket' },
-  { text: 'Contato', icon: 'mdi-whatsapp' },
-  { text: 'Sobre', icon: 'mdi-information' },
+  { text: 'Página Inicial', icon: 'mdi-home-account', to: '/' },
+  { text: 'Produtos', icon: 'mdi-rocket', to: '/products' },
+  { text: 'Contato', icon: 'mdi-whatsapp', to: '/contact' },
+  { text: 'Sobre', icon: 'mdi-information', to: '/about' },
 ]
 </script>

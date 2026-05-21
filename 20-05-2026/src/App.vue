@@ -8,11 +8,14 @@
       <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
 
       <v-app-bar-title>Sistema de Reserva</v-app-bar-title>
+      <v-spacer />
+      <v-btn variant="elevated" class="mr-2" 
+      color="blue-darken-1" to="/about">Sobre</v-btn>
     </v-app-bar>
 
     <v-main>
       <v-container>
-        aqui vai o conteúdo
+        <router-view />
       </v-container>
     </v-main>
   </v-app>
