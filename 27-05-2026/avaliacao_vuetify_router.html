@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Atividade Prática — Mini-Aplicação Vuetify com Vue Router e CRUD</title>
+<style>
+  @page {
+    size: A4;
+    margin: 2cm 2cm 2.2cm 2cm;
+    @bottom-center {
+      content: "Página " counter(page) " de " counter(pages);
+      font-family: 'Helvetica', sans-serif;
+      font-size: 9pt;
+      color: #6b7280;
+    }
+    @bottom-right {
+      content: "FMDS — UNEMAT 2026/1";
+      font-family: 'Helvetica', sans-serif;
+      font-size: 9pt;
+      color: #6b7280;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: 'Helvetica', 'Arial', sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.5;
+    color: #1f2937;
+    margin: 0;
+  }
+
+  .header {
+    border-bottom: 3px solid #41B883;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo {
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, #41B883 0%, #35495E 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 24pt;
+    flex-shrink: 0;
+  }
+
+  .header-text h1 {
+    margin: 0;
+    font-size: 15pt;
+    color: #35495E;
+    letter-spacing: -0.3px;
+  }
+  .header-text .subtitle {
+    color: #6b7280;
+    font-size: 10pt;
+    margin-top: 2px;
+  }
+
+  .meta {
+    background: #f3f4f6;
+    border-left: 4px solid #41B883;
+    padding: 10px 14px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+    font-size: 9.5pt;
+  }
+  .meta table { width: 100%; border-collapse: collapse; }
+  .meta td { padding: 2px 0; vertical-align: top; }
+  .meta td:first-child { width: 130px; font-weight: bold; color: #35495E; }
+
+  h2 {
+    color: #35495E;
+    font-size: 12.5pt;
+    border-bottom: 1.5px solid #e5e7eb;
+    padding-bottom: 4px;
+    margin-top: 16px;
+    margin-bottom: 8px;
+  }
+  h3 {
+    color: #41B883;
+    font-size: 11pt;
+    margin-top: 12px;
+    margin-bottom: 6px;
+  }
+
+  p { margin: 6px 0; }
+
+  .instructions {
+    background: #fef9e7;
+    border: 1px solid #f9d976;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 9.5pt;
+    margin-bottom: 14px;
+  }
+  .instructions ul { margin: 4px 0 0 0; padding-left: 18px; }
+  .instructions li { margin: 2px 0; }
+
+  code {
+    background: #f3f4f6;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 9.5pt;
+    color: #c0392b;
+  }
+
+  pre {
+    background: #1e293b;
+    color: #f8fafc;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 8.6pt;
+    line-height: 1.45;
+    margin: 6px 0;
+    page-break-inside: avoid;
+    white-space: pre;
+  }
+  pre .tag { color: #fb7185; }
+  pre .attr { color: #fbbf24; }
+  pre .str { color: #86efac; }
+  pre .kw { color: #c4b5fd; }
+  pre .com { color: #94a3b8; font-style: italic; }
+  pre .fn { color: #7dd3fc; }
+
+  .blanks {
+    display: inline-block;
+    border-bottom: 1.2px solid #6b7280;
+    min-width: 80px;
+    padding: 0 4px;
+  }
+
+  .mockup {
+    border: 2px solid #35495E;
+    border-radius: 8px;
+    padding: 0;
+    margin: 8px 0;
+    background: #fafafa;
+    page-break-inside: avoid;
+  }
+  .mockup-bar {
+    background: #35495E;
+    color: white;
+    padding: 4px 10px;
+    font-size: 9pt;
+    font-family: 'Courier New', monospace;
+  }
+  .mockup-body {
+    padding: 10px 14px;
+    font-size: 9.5pt;
+  }
+  .mockup-field {
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 3px;
+    padding: 3px 8px;
+    margin: 3px 0;
+    display: inline-block;
+    min-width: 180px;
+    color: #94a3b8;
+  }
+  .mockup-btn {
+    background: #41B883;
+    color: white;
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-size: 9pt;
+    display: inline-block;
+    margin: 0 2px;
+  }
+  .mockup-btn.danger { background: #ef4444; }
+  .mockup-btn.warn { background: #f59e0b; }
+  .mockup-btn.muted { background: #6b7280; }
+  .mockup-btn.dark { background: #35495E; }
+  .mockup-row {
+    background: white;
+    border: 1px solid #e5e7eb;
+    padding: 4px 8px;
+    margin: 2px 0;
+    border-radius: 3px;
+    font-size: 9.5pt;
+  }
+  .mockup-appbar {
+    background: #41B883;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 4px;
+    font-size: 9.5pt;
+    margin-bottom: 6px;
+  }
+
+  .requirements {
+    border: 1px solid #41B883;
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 8px 0;
+  }
+  .requirements-head {
+    background: #41B883;
+    color: white;
+    padding: 6px 12px;
+    font-weight: bold;
+    font-size: 10.5pt;
+  }
+  .requirements-body { padding: 8px 14px; background: white; }
+  .requirements-body ul { margin: 4px 0; padding-left: 18px; }
+  .requirements-body li { margin: 3px 0; }
+
+  table.criteria {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 6px 0;
+    font-size: 9.5pt;
+  }
+  table.criteria th, table.criteria td {
+    border: 1px solid #cbd5e1;
+    padding: 5px 8px;
+    text-align: left;
+    vertical-align: top;
+  }
+  table.criteria th {
+    background: #35495E;
+    color: white;
+  }
+  table.criteria td.pts {
+    text-align: center;
+    width: 70px;
+    background: #f9fafb;
+    font-weight: bold;
+    color: #41B883;
+  }
+  table.criteria tr.total td {
+    background: #41B883;
+    color: white;
+    font-weight: bold;
+  }
+
+  .checklist {
+    background: #f0fdf4;
+    border: 1px dashed #41B883;
+    border-radius: 6px;
+    padding: 8px 14px;
+    margin: 8px 0;
+    font-size: 9.5pt;
+  }
+  .checklist .item { margin: 3px 0; }
+  .checklist .box {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 1.5px solid #35495E;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  .tip {
+    background: #eff6ff;
+    border-left: 3px solid #3b82f6;
+    padding: 6px 10px;
+    margin: 6px 0;
+    font-size: 9.5pt;
+    border-radius: 0 4px 4px 0;
+  }
+  .tip strong { color: #1d4ed8; }
+
+  .warn {
+    background: #fef2f2;
+    border-left: 3px solid #ef4444;
+    padding: 6px 10px;
+    margin: 6px 0;
+    font-size: 9.5pt;
+    border-radius: 0 4px 4px 0;
+  }
+  .warn strong { color: #b91c1c; }
+
+  .themes {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin: 8px 0;
+  }
+  .theme-card {
+    flex: 1 1 30%;
+    border: 1.5px solid #41B883;
+    border-radius: 6px;
+    padding: 8px 10px;
+    background: #f0fdf4;
+    font-size: 9.3pt;
+  }
+  .theme-card strong { color: #35495E; font-size: 10pt; }
+  .theme-card .fields { color: #6b7280; font-style: italic; margin-top: 4px; display: block; }
+
+  .meme-section {
+    margin-top: 12px;
+    page-break-inside: avoid;
+    text-align: center;
+  }
+  .meme-section h2 {
+    border: none;
+    text-align: center;
+    color: #41B883;
+  }
+  .meme {
+    border: 3px solid #1f2937;
+    border-radius: 8px;
+    background: #fff;
+    max-width: 460px;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+  .meme-row {
+    display: flex;
+    border-bottom: 3px solid #1f2937;
+  }
+  .meme-row:last-child { border-bottom: none; }
+  .meme-panel {
+    flex: 1;
+    padding: 8px 8px;
+    text-align: center;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-right: 3px solid #1f2937;
+  }
+  .meme-panel:last-child { border-right: none; }
+  .meme-face {
+    font-size: 26pt;
+    line-height: 1;
+    margin-bottom: 3px;
+  }
+  .meme-caption {
+    font-weight: bold;
+    font-size: 9pt;
+    color: #1f2937;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .meme-caption-2 {
+    margin-top: 12px;
+    font-weight: bold;
+    color: #35495E;
+    font-style: italic;
+    font-size: 10pt;
+  }
+
+  .footer-note {
+    margin-top: 16px;
+    text-align: center;
+    font-size: 9pt;
+    color: #6b7280;
+    font-style: italic;
+  }
+
+  .route-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 6px 0;
+    font-size: 9.5pt;
+  }
+  .route-table th, .route-table td {
+    border: 1px solid #cbd5e1;
+    padding: 5px 8px;
+    text-align: left;
+    vertical-align: top;
+  }
+  .route-table th {
+    background: #35495E;
+    color: white;
+  }
+  .route-table td:first-child {
+    font-family: 'Courier New', monospace;
+    color: #c0392b;
+    width: 130px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">V</div>
+  <div class="header-text">
+    <h1>Atividade Prática — Mini-App com Vuetify, Vue Router e CRUD</h1>
+    <div class="subtitle">Juntando tudo: componentes, rotas, Material Design e estado local</div>
+  </div>
+</div>
+
+<div class="meta">
+  <table>
+    <tr><td>Disciplina:</td><td>Frameworks Modernos para Desenvolvimento de Sistemas (FACET-SNP-310)</td></tr>
+    <tr><td>Professor:</td><td>Ivan Luiz Pedroso Pires</td></tr>
+    <tr><td>Curso/Semestre:</td><td>Sistemas de Informação — UNEMAT — 2026/1</td></tr>
+    <tr><td>Valor:</td><td>6,0 pontos</td></tr>
+    <tr><td>Tempo estimado:</td><td>4 a 6 horas de trabalho (em casa)</td></tr>
+    <tr><td>Modalidade:</td><td>Individual ou em dupla</td></tr>
+    <tr><td>Entrega:</td><td>SIGAA — aberta de <strong>27/05/2026</strong> a <strong>02/06/2026</strong> (até 23h59)</td></tr>
+    <tr><td>Dificuldade:</td><td>Média / Alta</td></tr>
+  </table>
+</div>
+
+<div style="margin-bottom: 8px;">
+  <strong>Aluno(a) 1:</strong> <span class="blanks" style="min-width:260px"></span> &nbsp;
+  <strong>Matrícula:</strong> <span class="blanks" style="min-width:110px"></span>
+</div>
+<div style="margin-bottom: 12px;">
+  <strong>Aluno(a) 2:</strong> <span class="blanks" style="min-width:260px"></span> &nbsp;
+  <strong>Matrícula:</strong> <span class="blanks" style="min-width:110px"></span>
+</div>
+<div style="margin-bottom: 12px;">
+  <strong>Tema escolhido:</strong> <span class="blanks" style="min-width:380px"></span>
+</div>
+
+<h2>1. Objetivo</h2>
+<p>
+  Construir uma <strong>mini-aplicação Vue 3 + Vuetify</strong> usando <strong>Vue Router</strong>
+  e <strong>componentes reutilizáveis</strong>, contendo um <strong>CRUD completo</strong>
+  (Create / Read / Update / Delete) que opere sobre uma lista mantida em <strong>variáveis locais</strong>
+  (sem backend, sem banco de dados — os dados moram em memória, como uma <code>ref</code> ou
+  <code>reactive</code>). A aplicação deve girar em torno de <strong>um tema específico</strong>,
+  escolhido por você no início da atividade.
+</p>
+
+<h2>2. Escolha do tema</h2>
+<p>
+  Escolha <strong>um</strong> tema para sua aplicação e <strong>se comprometa com ele</strong>
+  (preencha o campo "Tema escolhido" no cabeçalho). Sugestões abaixo, mas você pode propor o seu:
+</p>
+
+<div class="themes">
+  <div class="theme-card">
+    <strong>Lanchonete UNEMAT</strong>
+    <span class="fields">campos: id, nome, descrição, preço, categoria (Lanche/Bebida/Sobremesa), disponível</span>
+  </div>
+  <div class="theme-card">
+    <strong>Catálogo de Bandas</strong>
+    <span class="fields">campos: id, nome da banda, gênero, ano de formação, país, em atividade</span>
+  </div>
+  <div class="theme-card">
+    <strong>Sebo Universitário</strong>
+    <span class="fields">campos: id, título, autor, ano, preço, gênero, disponível</span>
+  </div>
+  <div class="theme-card">
+    <strong>Pet Shop</strong>
+    <span class="fields">campos: id, nome do animal, espécie, raça, idade, dono, vacinado</span>
+  </div>
+  <div class="theme-card">
+    <strong>Backlog de Jogos</strong>
+    <span class="fields">campos: id, título, plataforma, gênero, horas jogadas, zerado</span>
+  </div>
+  <div class="theme-card">
+    <strong>(Outro)</strong>
+    <span class="fields">crie o seu — desde que tenha pelo menos 5 campos com tipos variados (string, number, boolean e/ou enum)</span>
+  </div>
+</div>
+
+<div class="warn">
+  <strong>Regra do tema:</strong> o tema escolhido precisa aparecer de forma <em>visível</em> na aplicação —
+  nas cores, no nome no <code>v-app-bar</code>, nos ícones do menu, no texto da página "Sobre" e nos rótulos
+  dos campos do formulário. Não vale escolher "Lanchonete" e exibir "Cadastro de itens" na tela.
+</div>
+
+<h2>3. Requisitos funcionais</h2>
+
+<div class="requirements">
+  <div class="requirements-head">RF — O que o sistema deve fazer</div>
+  <div class="requirements-body">
+    <ul>
+      <li><strong>RF1 — Navegação:</strong> a aplicação deve ter <strong>no mínimo 3 rotas distintas</strong>, navegáveis por um menu (drawer ou app-bar) usando <code>router-link</code> ou <code>:to</code>.</li>
+      <li><strong>RF2 — Create:</strong> permitir <strong>cadastrar</strong> um novo item do tema escolhido por meio de um formulário Vuetify (<code>v-text-field</code>, <code>v-select</code>, <code>v-switch</code>/<code>v-checkbox</code>, etc.).</li>
+      <li><strong>RF3 — Read:</strong> listar todos os itens cadastrados em uma página própria, usando componentes Vuetify (ex.: <code>v-list</code>, <code>v-data-table</code> ou <code>v-card</code> em grid).</li>
+      <li><strong>RF4 — Update:</strong> permitir <strong>editar</strong> qualquer item já cadastrado e salvar as alterações.</li>
+      <li><strong>RF5 — Delete:</strong> permitir <strong>excluir</strong> um item (com <em>confirmação</em>, via <code>v-dialog</code> ou <code>confirm()</code>).</li>
+      <li><strong>RF6 — Estado global local:</strong> os dados precisam <strong>sobreviver à troca de rota</strong> — ao sair da página de lista para o formulário e voltar, os itens cadastrados continuam lá.</li>
+      <li><strong>RF7 — Página "Sobre":</strong> rota com nome da dupla, matrículas e descrição curta do tema.</li>
+      <li><strong>RF8 — Lista vazia:</strong> mostrar uma mensagem amigável quando ainda não houver itens cadastrados (e um botão para cadastrar o primeiro).</li>
+    </ul>
+  </div>
+</div>
+
+<h2>4. Rotas mínimas exigidas</h2>
+
+<table class="route-table">
+  <tr><th>Caminho</th><th>O que mostra</th><th>O que precisa fazer</th></tr>
+  <tr>
+    <td>/</td>
+    <td>Home — boas-vindas com o tema</td>
+    <td>Título grande, descrição curta, <code>v-card</code> com estatísticas (ex.: total de itens, total de ativos), botão para "Ver lista" e "Cadastrar novo".</td>
+  </tr>
+  <tr>
+    <td>/lista</td>
+    <td>Lista de itens (Read)</td>
+    <td>Renderiza todos os itens em <code>v-data-table</code>, <code>v-list</code> ou cards. Cada linha tem botões <em>Editar</em> e <em>Excluir</em>.</td>
+  </tr>
+  <tr>
+    <td>/cadastro</td>
+    <td>Formulário (Create + Update)</td>
+    <td>Mesma tela serve para cadastrar (sem id) e editar (recebe <code>?id=</code> via <em>query</em> ou <code>/cadastro/:id</code>). Botão "Salvar" volta para <code>/lista</code>.</td>
+  </tr>
+  <tr>
+    <td>/sobre</td>
+    <td>Sobre a dupla / projeto</td>
+    <td>Nome dos integrantes, matrículas, tema escolhido e 2-3 frases descrevendo a aplicação.</td>
+  </tr>
+</table>
+
+<div class="tip">
+  <strong>Pode ter mais rotas?</strong> Pode. <code>/lista</code> + <code>/cadastro</code> + <code>/sobre</code> + <code>/</code> = 4 rotas, já passa do mínimo. Se quiser criar uma rota extra (estatísticas, "favoritos", filtro por categoria, etc.), pontuação só sobe na qualidade.
+</div>
+
+<h2>5. Telas esperadas (referência visual)</h2>
+
+<div class="mockup">
+  <div class="mockup-bar">Tela A — Home (rota /)</div>
+  <div class="mockup-body">
+    <div class="mockup-appbar">☰ &nbsp; 🍔 Lanchonete UNEMAT &nbsp; &nbsp; <span style="float:right;">Sobre</span></div>
+    <strong>Bem-vindo à Lanchonete UNEMAT 🍔</strong><br>
+    <span style="color:#6b7280;">Cadastre e gerencie os itens do cardápio.</span><br><br>
+    <span class="mockup-row" style="display:inline-block; min-width:140px;">📊 Total de itens: <strong>12</strong></span>
+    <span class="mockup-row" style="display:inline-block; min-width:140px;">✅ Disponíveis: <strong>9</strong></span><br><br>
+    <span class="mockup-btn">Ver cardápio</span> <span class="mockup-btn dark">+ Novo item</span>
+  </div>
+</div>
+
+<div class="mockup">
+  <div class="mockup-bar">Tela B — Lista (rota /lista)</div>
+  <div class="mockup-body">
+    <div class="mockup-appbar">☰ &nbsp; 🍔 Lanchonete UNEMAT &nbsp; &nbsp; <span style="float:right;">Sobre</span></div>
+    <strong>Cardápio</strong> &nbsp; <span class="mockup-btn">+ Novo</span><br>
+    <div class="mockup-row">🥪 X-UNEMAT — Lanche — R$ 18,00 — ✅ &nbsp; <span class="mockup-btn warn">Editar</span> <span class="mockup-btn danger">Excluir</span></div>
+    <div class="mockup-row">🥤 Suco de Maracujá — Bebida — R$ 6,00 — ✅ &nbsp; <span class="mockup-btn warn">Editar</span> <span class="mockup-btn danger">Excluir</span></div>
+    <div class="mockup-row">🍰 Bolo de Cenoura — Sobremesa — R$ 7,50 — ❌ &nbsp; <span class="mockup-btn warn">Editar</span> <span class="mockup-btn danger">Excluir</span></div>
+  </div>
+</div>
+
+<div class="mockup">
+  <div class="mockup-bar">Tela C — Cadastro/Edição (rota /cadastro ou /cadastro/:id)</div>
+  <div class="mockup-body">
+    <div class="mockup-appbar">☰ &nbsp; 🍔 Lanchonete UNEMAT</div>
+    <strong>Novo item</strong> &nbsp; <em>(ou "Editando: X-UNEMAT")</em><br>
+    Nome: <span class="mockup-field">X-UNEMAT</span><br>
+    Descrição: <span class="mockup-field" style="min-width:260px">Pão, hambúrguer, queijo, ovo e bacon</span><br>
+    Categoria: <span class="mockup-field">Lanche ▼</span> &nbsp; Preço: <span class="mockup-field" style="min-width:80px">18.00</span><br>
+    Disponível: <span class="mockup-field" style="min-width:30px">☑</span><br><br>
+    <span class="mockup-btn">Salvar</span> <span class="mockup-btn muted">Cancelar</span>
+  </div>
+</div>
+
+<h2>6. Requisitos técnicos — checklist obrigatório</h2>
+
+<div class="checklist">
+  <div class="item"><span class="box"></span> Projeto criado com <code>bun create vuetify</code> (ou equivalente) — Vue 3 + Vite + Vuetify.</div>
+  <div class="item"><span class="box"></span> <strong>Vue Router</strong> configurado com <strong>no mínimo 3 rotas</strong> distintas, registradas em <code>src/router/index.js</code> (ou <code>.ts</code>).</div>
+  <div class="item"><span class="box"></span> <strong>Navegação por menu</strong> (drawer ou app-bar) usando <code>&lt;router-link&gt;</code> ou <code>:to="..."</code> em <code>v-btn</code>/<code>v-list-item</code>.</div>
+  <div class="item"><span class="box"></span> <strong><code>&lt;router-view /&gt;</code></strong> no <code>App.vue</code>, renderizando a página correta para cada rota.</div>
+  <div class="item"><span class="box"></span> <strong>Pelo menos 2 componentes reutilizáveis próprios</strong> em <code>src/components/</code> (ex.: <code>ItemCard.vue</code>, <code>ItemForm.vue</code>, <code>EstatisticasBox.vue</code>) — recebendo <strong>props</strong> e/ou emitindo <strong>events</strong>.</div>
+  <div class="item"><span class="box"></span> <strong>Tema Vuetify customizado</strong> em <code>src/plugins/vuetify.js</code>: pelo menos <code>primary</code> e <code>secondary</code> alteradas para combinar com o tema escolhido.</div>
+  <div class="item"><span class="box"></span> <strong>CRUD completo</strong>: Create, Read, Update e Delete, todos funcionando sobre uma lista <code>ref([])</code> ou <code>reactive([])</code>.</div>
+  <div class="item"><span class="box"></span> <strong>Estado preservado entre rotas</strong>: a lista mora em um arquivo compartilhado (ex.: <code>src/store/itens.js</code> exportando um <code>ref</code>) ou em um <em>composable</em> (<code>useItens.js</code>) — <strong>não</strong> dentro do <code>setup</code> de uma página específica.</div>
+  <div class="item"><span class="box"></span> Uso natural de pelo menos <strong>5 componentes Vuetify</strong> (ex.: <code>v-app-bar</code>, <code>v-navigation-drawer</code>, <code>v-card</code>, <code>v-text-field</code>, <code>v-btn</code>, <code>v-data-table</code>, <code>v-dialog</code>, <code>v-select</code>, <code>v-switch</code>...).</div>
+  <div class="item"><span class="box"></span> <strong>Sem erros vermelhos</strong> no console do navegador ao usar a aplicação.</div>
+</div>
+
+<h2>7. Como compartilhar o estado entre rotas (dica essencial)</h2>
+
+<p>
+  Como cada página é um componente diferente, declarar <code>const itens = ref([])</code> dentro
+  de <code>Lista.vue</code> e dentro de <code>Cadastro.vue</code> cria <strong>duas listas separadas</strong>.
+  A forma mais simples de compartilhar é criar um arquivo só pra isso:
+</p>
+
+<pre><span class="com">// src/store/itens.js</span>
+<span class="kw">import</span> { ref } <span class="kw">from</span> <span class="str">'vue'</span>;
+
+<span class="kw">export const</span> itens = <span class="fn">ref</span>([]);  <span class="com">// uma única lista, importada por todas as páginas</span>
+
+<span class="kw">export function</span> <span class="fn">salvar</span>(item) {
+  <span class="kw">if</span> (item.id) {
+    <span class="kw">const</span> i = itens.value.<span class="fn">findIndex</span>(x =&gt; x.id === item.id);
+    itens.value[i] = { ...item };
+  } <span class="kw">else</span> {
+    itens.value.<span class="fn">push</span>({ ...item, id: <span class="fn">Date.now</span>() });
+  }
+}
+
+<span class="kw">export function</span> <span class="fn">excluir</span>(id) {
+  itens.value = itens.value.<span class="fn">filter</span>(x =&gt; x.id !== id);
+}</pre>
+
+<p>Depois, em qualquer página: <code>import { itens, salvar, excluir } from '@/store/itens'</code>. Pronto, mesma lista em toda a aplicação.</p>
+
+<div class="tip">
+  <strong>Alternativa avançada:</strong> se quiser, dá para usar Pinia. Mas <em>não é obrigatório</em> — o arquivo compartilhado acima já cumpre o RF6.
+</div>
+
+<h2>8. Critérios de avaliação</h2>
+
+<table class="criteria">
+  <tr>
+    <th>Critério</th>
+    <th>O que avaliamos</th>
+    <th class="pts">Pontos</th>
+  </tr>
+  <tr>
+    <td>Vue Router</td>
+    <td>3+ rotas funcionando, menu com <code>router-link</code>, <code>router-view</code> no <code>App.vue</code>, navegação programática (<code>router.push</code>) após salvar.</td>
+    <td class="pts">1,00</td>
+  </tr>
+  <tr>
+    <td>Componentes Vuetify</td>
+    <td>Uso correto e idiomático de pelo menos 5 componentes Vuetify (layout via <code>v-app</code>, <code>v-app-bar</code>, <code>v-main</code>, formulários, listas/cards).</td>
+    <td class="pts">1,00</td>
+  </tr>
+  <tr>
+    <td>Componentes próprios</td>
+    <td>Mínimo de 2 componentes criados em <code>src/components/</code>, recebendo props e/ou emitindo events. Não vale só copiar tudo dentro das páginas.</td>
+    <td class="pts">1,00</td>
+  </tr>
+  <tr>
+    <td>CRUD completo</td>
+    <td>Create, Read, Update e Delete funcionam de ponta a ponta. Confirmação ao excluir. Lista vazia tratada.</td>
+    <td class="pts">1,50</td>
+  </tr>
+  <tr>
+    <td>Tema aplicado</td>
+    <td>Vuetify theme customizado (cores em <code>vuetify.js</code>) + identidade visual coerente com o tema escolhido (nome no app-bar, ícones, textos).</td>
+    <td class="pts">0,50</td>
+  </tr>
+  <tr>
+    <td>Estado compartilhado</td>
+    <td>Lista mora em arquivo/composable separado e sobrevive à troca de rota. Cadastrou na página A, está lá na página B.</td>
+    <td class="pts">0,50</td>
+  </tr>
+  <tr>
+    <td>Organização e qualidade</td>
+    <td>Estrutura de pastas limpa, nomes coerentes, sem código morto, indentação consistente, sem erros no console.</td>
+    <td class="pts">0,50</td>
+  </tr>
+  <tr class="total">
+    <td colspan="2" style="text-align:right;">TOTAL</td>
+    <td class="pts" style="color:white;">6,00</td>
+  </tr>
+</table>
+
+<h2>9. Estrutura de pastas sugerida</h2>
+
+<pre>cardapio/
+├── index.html
+├── package.json
+├── vite.config.js
+└── src/
+    ├── main.js
+    ├── App.vue                   <span class="com">&lt;-- v-app, v-app-bar, drawer, router-view</span>
+    ├── plugins/
+    │   └── vuetify.js            <span class="com">&lt;-- tema customizado aqui</span>
+    ├── router/
+    │   └── index.js              <span class="com">&lt;-- as rotas (/, /lista, /cadastro, /sobre)</span>
+    ├── store/
+    │   └── itens.js              <span class="com">&lt;-- ref([]) + salvar / excluir compartilhados</span>
+    ├── pages/
+    │   ├── Home.vue
+    │   ├── Lista.vue
+    │   ├── Cadastro.vue
+    │   └── Sobre.vue
+    └── components/
+        ├── ItemCard.vue          <span class="com">&lt;-- recebe :item via prop</span>
+        └── EstatisticasBox.vue   <span class="com">&lt;-- recebe :total e :ativos via props</span>
+</pre>
+
+<h2>10. Formato de entrega</h2>
+<ol style="margin: 4px 0; padding-left: 20px;">
+  <li>Antes de zipar: <strong>delete a pasta <code>node_modules</code></strong> (ela é enorme e desnecessária — o professor instala de novo).</li>
+  <li>Compacte a pasta do projeto em um arquivo <code>.zip</code>.</li>
+  <li>Renomeie o arquivo para: <code>fmds_atividade_vuetify_NOME1_NOME2.zip</code>.</li>
+  <li>Envie na tarefa correspondente do <strong>SIGAA</strong>, dentro do período aberto: <strong>27/05/2026 a 02/06/2026 (até 23h59)</strong>. Apenas <em>uma</em> pessoa da dupla envia, com os dois nomes no arquivo.</li>
+  <li>Inclua no <code>.zip</code> um <code>README.md</code> com: tema escolhido, nome dos integrantes, e como rodar (<code>bun install</code> &amp; <code>bun dev</code>).</li>
+</ol>
+
+<div class="tip">
+  <strong>Dica de produtividade:</strong> implemente nesta ordem — (1) projeto + Vuetify rodando, (2) 4 páginas vazias e o router funcionando, (3) <code>store/itens.js</code> com a lista, (4) tela de Lista lendo do store, (5) tela de Cadastro escrevendo no store (Create), (6) link "Editar" passando o id (Update), (7) botão "Excluir" (Delete), (8) Home com estatísticas, (9) tema Vuetify customizado por último. Não tente fazer tudo de uma vez.
+</div>
+
+<div class="warn">
+  <strong>Plágio entre duplas zera a nota das duas duplas.</strong> Pode usar IA pra tirar dúvida, mas o código entregue precisa ser entendido pelos integrantes — qualquer pergunta minha na correção precisa ter resposta. Vale também copiar componente do Vuetify Docs (é pra isso que serve), mas dá crédito mental e adapta pro seu tema.
+</div>
+
+<!-- MEME -->
+<div class="meme-section">
+  <h2>Bônus moral — o meme do Vue Router</h2>
+
+  <div class="meme">
+    <div class="meme-row">
+      <div class="meme-panel" style="background:#fee2e2;">
+        <div class="meme-face">&#x1F634;</div>
+        <div class="meme-caption">Eu antes da<br>aula:<br>"rotas? fácil"</div>
+      </div>
+      <div class="meme-panel" style="background:#dcfce7;">
+        <div class="meme-face">&#x1F4A1;</div>
+        <div class="meme-caption">Aprendi sobre<br>router-link e<br>router-view</div>
+      </div>
+    </div>
+    <div class="meme-row">
+      <div class="meme-panel" style="background:#fef3c7; flex: 2;">
+        <div class="meme-face">&#x1F635;&#x200D;&#x1F4AB;</div>
+        <div class="meme-caption" style="font-size:10pt;">
+          "Cadastrei o item e ao voltar pra lista sumiu tudo!"<br>
+          <em>(declarou o ref dentro do setup da página em vez do store)</em>
+        </div>
+      </div>
+    </div>
+    <div class="meme-row">
+      <div class="meme-panel" style="background:#e0e7ff;">
+        <div class="meme-face">&#x1F9D1;&#x200D;&#x1F4BB;</div>
+        <div class="meme-caption">Eu: "vou usar<br>Vuetify pra<br>economizar tempo"</div>
+      </div>
+      <div class="meme-panel" style="background:#fce7f3;">
+        <div class="meme-face">&#x1F4DA;</div>
+        <div class="meme-caption">3h depois lendo<br>a doc do<br>v-data-table</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="meme-caption-2">
+    "Um framework moderno te poupa de escrever CSS — pra você gastar o tempo lendo a documentação do framework." — Provérbio Vuetify
+  </div>
+</div>
+
+<div class="footer-note">
+  Boa codada, dupla! &nbsp;✦&nbsp; Entrega: SIGAA até <strong>23h59 de 02/06/2026</strong>. &nbsp;✦&nbsp; Dúvida? Pergunte no grupo da turma — quanto antes melhor.
+</div>
+
+</body>
+</html>
