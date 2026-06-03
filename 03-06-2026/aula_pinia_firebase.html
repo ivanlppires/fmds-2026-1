@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Aula — Pinia + Autenticação Google (Firebase) no Vuetify</title>
+<style>
+  @page {
+    size: A4;
+    margin: 1.8cm 1.8cm 2cm 1.8cm;
+    @bottom-center {
+      content: "Página " counter(page) " de " counter(pages);
+      font-family: 'Helvetica', sans-serif;
+      font-size: 9pt;
+      color: #6b7280;
+    }
+    @bottom-right {
+      content: "FMDS — UNEMAT 2026/1 — Aula 03/06";
+      font-family: 'Helvetica', sans-serif;
+      font-size: 9pt;
+      color: #6b7280;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: 'Helvetica', 'Arial', sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.5;
+    color: #1f2937;
+    margin: 0;
+  }
+
+  .header {
+    border-bottom: 3px solid #41B883;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .logo {
+    width: 54px;
+    height: 54px;
+    background: linear-gradient(135deg, #41B883 0%, #35495E 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 26pt;
+    flex-shrink: 0;
+  }
+  .header-text h1 { margin: 0; font-size: 15.5pt; color: #35495E; letter-spacing: -0.3px; }
+  .header-text .subtitle { color: #6b7280; font-size: 10pt; margin-top: 2px; }
+
+  .meta {
+    background: #f3f4f6;
+    border-left: 4px solid #41B883;
+    padding: 10px 14px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+    font-size: 9.5pt;
+  }
+  .meta table { width: 100%; border-collapse: collapse; }
+  .meta td { padding: 2px 0; vertical-align: top; }
+  .meta td:first-child { width: 135px; font-weight: bold; color: #35495E; }
+
+  h2 {
+    color: #35495E;
+    font-size: 13pt;
+    border-bottom: 1.5px solid #e5e7eb;
+    padding-bottom: 4px;
+    margin-top: 18px;
+    margin-bottom: 8px;
+  }
+  h3 { color: #41B883; font-size: 11.2pt; margin-top: 12px; margin-bottom: 6px; }
+  p { margin: 6px 0; }
+
+  code {
+    background: #f3f4f6;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 9.3pt;
+    color: #c0392b;
+  }
+
+  pre {
+    background: #1e293b;
+    color: #f8fafc;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 8.5pt;
+    line-height: 1.45;
+    margin: 6px 0;
+    page-break-inside: avoid;
+    white-space: pre;
+    overflow: visible;
+  }
+  pre .com { color: #94a3b8; font-style: italic; }
+  pre .kw  { color: #c4b5fd; }
+  pre .str { color: #86efac; }
+  pre .fn  { color: #7dd3fc; }
+  pre .tag { color: #fb7185; }
+  pre .attr{ color: #fbbf24; }
+  .filelabel {
+    background: #35495E;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    font-size: 8.6pt;
+    padding: 3px 10px;
+    border-radius: 6px 6px 0 0;
+    display: inline-block;
+    margin-bottom: -6px;
+    margin-top: 8px;
+  }
+
+  .tip {
+    background: #eff6ff; border-left: 3px solid #3b82f6;
+    padding: 6px 10px; margin: 8px 0; font-size: 9.5pt; border-radius: 0 4px 4px 0;
+  }
+  .tip strong { color: #1d4ed8; }
+  .warn {
+    background: #fef2f2; border-left: 3px solid #ef4444;
+    padding: 6px 10px; margin: 8px 0; font-size: 9.5pt; border-radius: 0 4px 4px 0;
+  }
+  .warn strong { color: #b91c1c; }
+  .key {
+    background: #f0fdf4; border-left: 3px solid #41B883;
+    padding: 6px 10px; margin: 8px 0; font-size: 9.5pt; border-radius: 0 4px 4px 0;
+  }
+  .key strong { color: #15803d; }
+
+  table.agenda { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 9.3pt; }
+  table.agenda th, table.agenda td { border: 1px solid #cbd5e1; padding: 4px 8px; text-align: left; vertical-align: top; }
+  table.agenda th { background: #35495E; color: white; }
+  table.agenda td:first-child { font-family: 'Courier New', monospace; width: 92px; color: #c0392b; white-space: nowrap; }
+
+  .step {
+    border: 1px solid #d1d5db;
+    border-left: 4px solid #41B883;
+    border-radius: 6px;
+    padding: 8px 12px 8px 12px;
+    margin: 12px 0;
+    page-break-inside: avoid;
+  }
+  .step-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+  .step-num {
+    background: #41B883; color: white; font-weight: bold;
+    width: 26px; height: 26px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11pt; flex-shrink: 0;
+  }
+  .step-title { font-size: 11.5pt; font-weight: bold; color: #35495E; }
+  .step-time { margin-left: auto; font-size: 8.5pt; color: #6b7280; font-style: italic; }
+
+  ol.clicks { margin: 4px 0 4px 0; padding-left: 20px; font-size: 9.7pt; }
+  ol.clicks li { margin: 3px 0; }
+  ul.tight { margin: 4px 0; padding-left: 18px; }
+  ul.tight li { margin: 2px 0; }
+
+  .kbd {
+    background: #fff; border: 1px solid #9ca3af; border-bottom-width: 2px;
+    border-radius: 4px; padding: 0 5px; font-family: 'Courier New', monospace;
+    font-size: 8.8pt; color: #374151;
+  }
+
+  .mockup { border: 2px solid #35495E; border-radius: 8px; margin: 8px 0; background: #fafafa; page-break-inside: avoid; }
+  .mockup-bar { background: #35495E; color: white; padding: 4px 10px; font-size: 9pt; font-family: 'Courier New', monospace; }
+  .mockup-body { padding: 10px 14px; font-size: 9.5pt; }
+  .mockup-appbar { background: #41B883; color: white; padding: 5px 12px; border-radius: 4px; font-size: 9.5pt; margin-bottom: 6px; }
+  .mockup-btn { background: #41B883; color: white; padding: 3px 10px; border-radius: 3px; font-size: 9pt; display: inline-block; margin: 2px; }
+  .mockup-btn.out { background: #fff; color: #35495E; border: 1px solid #35495E; }
+  .mockup-btn.sec { background: #35495E; }
+  .avatar { display:inline-block; width:22px; height:22px; border-radius:50%; background:#fbbf24; vertical-align:middle; text-align:center; line-height:22px; font-size:11pt;}
+
+  table.criteria { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 9.5pt; }
+  table.criteria th, table.criteria td { border: 1px solid #cbd5e1; padding: 5px 8px; text-align: left; vertical-align: top; }
+  table.criteria th { background: #35495E; color: white; }
+  table.criteria td.pts { text-align: center; width: 70px; background: #f9fafb; font-weight: bold; color: #41B883; }
+  table.criteria tr.total td { background: #41B883; color: white; font-weight: bold; }
+
+  .exercise {
+    border: 2px solid #41B883; border-radius: 8px; overflow: hidden; margin: 10px 0; page-break-inside: avoid;
+  }
+  .exercise-head { background: #41B883; color: white; padding: 7px 14px; font-weight: bold; font-size: 12pt; }
+  .exercise-body { padding: 10px 14px; }
+
+  .meme-section { margin-top: 16px; page-break-inside: avoid; text-align: center; }
+  .meme-section h2 { border: none; text-align: center; color: #41B883; }
+  .meme { border: 3px solid #1f2937; border-radius: 8px; background: #fff; max-width: 470px; margin: 0 auto; overflow: hidden; }
+  .meme-row { display: flex; border-bottom: 3px solid #1f2937; }
+  .meme-row:last-child { border-bottom: none; }
+  .meme-panel { flex: 1; padding: 8px; text-align: center; min-height: 78px; display: flex; flex-direction: column; justify-content: center; border-right: 3px solid #1f2937; }
+  .meme-panel:last-child { border-right: none; }
+  .meme-face { font-size: 26pt; line-height: 1; margin-bottom: 3px; }
+  .meme-caption { font-weight: bold; font-size: 9pt; color: #1f2937; text-transform: uppercase; letter-spacing: 0.5px; }
+  .meme-caption-2 { margin-top: 12px; font-weight: bold; color: #35495E; font-style: italic; font-size: 10pt; }
+
+  .footer-note { margin-top: 16px; text-align: center; font-size: 9pt; color: #6b7280; font-style: italic; }
+  .pagebreak { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">&#x1F525;</div>
+  <div class="header-text">
+    <h1>Pinia + Autenticação Google (Firebase) no Vuetify</h1>
+    <div class="subtitle">Roteiro de aula — estado global de verdade e login social em um app Vue 3</div>
+  </div>
+</div>
+
+<div class="meta">
+  <table>
+    <tr><td>Disciplina:</td><td>Frameworks Modernos para Desenvolvimento de Sistemas (FACET-SNP-310)</td></tr>
+    <tr><td>Professor:</td><td>Ivan Luiz Pedroso Pires</td></tr>
+    <tr><td>Curso/Semestre:</td><td>Sistemas de Informação — UNEMAT (Sinop) — 2026/1</td></tr>
+    <tr><td>Data:</td><td>03/06/2026 (quarta-feira)</td></tr>
+    <tr><td>Duração estimada:</td><td>~2 horas (aula prática ao vivo)</td></tr>
+    <tr><td>Pré-requisitos:</td><td>Vue 3 (Composition API), Vuetify, Vue Router e CRUD em memória (aulas de 13/05, 20/05 e 27/05)</td></tr>
+    <tr><td>Projeto de apoio:</td><td>pasta <code>03-06-2026/</code> (exemplo pronto, roda com <code>bun install &amp;&amp; bun dev</code>)</td></tr>
+  </table>
+</div>
+
+<h2>0. Mapa da aula</h2>
+<p>O objetivo de hoje é dar dois saltos de uma vez, costurados pelo Vuetify:</p>
+<ul class="tight">
+  <li><strong>Pinia</strong> — trocar aquele <code>store/itens.js</code> caseiro da aula passada por uma store de verdade, oficial do ecossistema Vue.</li>
+  <li><strong>Firebase Authentication</strong> — colocar um <strong>login com a conta Google</strong> funcionando, sem escrever um único endpoint de backend.</li>
+  <li><strong>Rota protegida</strong> — uma página (<code>/perfil</code>) que só abre para quem está logado.</li>
+</ul>
+
+<table class="agenda">
+  <tr><th>Tempo</th><th>Bloco</th><th>O que fazemos ao vivo</th></tr>
+  <tr><td>0:00–0:15</td><td>Recap + motivação</td><td>Lembrar o store manual da aula passada e mostrar onde ele dói. Apresentar o Pinia.</td></tr>
+  <tr><td>0:15–0:40</td><td>Pinia</td><td>Instalar, registrar, e escrever a 1ª store (estado, getters, actions).</td></tr>
+  <tr><td>0:40–1:00</td><td>Firebase Console</td><td>Criar o projeto, ativar o login Google, copiar a config.</td></tr>
+  <tr><td>1:00–1:30</td><td>Login funcionando</td><td><code>firebase.js</code> + store de auth + <code>UserMenu</code>. Clicar e logar com o Google.</td></tr>
+  <tr><td>1:30–1:50</td><td>Rota protegida</td><td>Guarda de rota, <code>storeToRefs</code>, página de perfil. Testar o F5.</td></tr>
+  <tr><td>1:50–2:00</td><td>Erros &amp; exercício</td><td>Troubleshooting dos erros clássicos. Passar o exercício.</td></tr>
+</table>
+
+<h2>1. Por que Pinia? (gancho com a aula passada)</h2>
+<p>
+  Na aula de 27/05 a gente compartilhou a lista entre as rotas com um arquivo solto:
+</p>
+<div class="filelabel">src/store/itens.js (a gambiarra que funcionava)</div>
+<pre><span class="kw">import</span> { ref } <span class="kw">from</span> <span class="str">'vue'</span>
+<span class="kw">export const</span> itens = <span class="fn">ref</span>([])         <span class="com">// estado solto</span>
+<span class="kw">export function</span> <span class="fn">salvar</span>(item) { <span class="com">/* ... */</span> }
+<span class="kw">export function</span> <span class="fn">excluir</span>(id)  { <span class="com">/* ... */</span> }</pre>
+<p>Funciona, mas vai escalando mal: estado, regras e "ações" ficam espalhados, sem organização, sem
+  ferramentas de debug, e cada um inventa um padrão diferente. <strong>Pinia</strong> é a forma
+  <em>oficial</em> de fazer isso no Vue — o mesmo conceito (um estado que vive fora dos componentes),
+  porém organizado em <em>stores</em> com <strong>estado</strong>, <strong>getters</strong> e <strong>actions</strong>.</p>
+
+<div class="key">
+  <strong>Analogia:</strong> uma store Pinia é como um <code>&lt;script setup&gt;</code> que <u>não pertence a nenhum componente</u>
+  e é <u>compartilhado por todos</u>. <code>ref()</code> vira o estado, <code>computed()</code> vira getter,
+  e <code>function</code> vira action.
+</div>
+
+<h2>2. Os 3 conceitos do Pinia</h2>
+<table class="agenda">
+  <tr><th>Conceito</th><th>No Vue puro é…</th><th>Para que serve</th></tr>
+  <tr><td>state</td><td><code>ref()</code> / <code>reactive()</code></td><td>Os dados. Ex.: <code>user</code>, <code>carregando</code>.</td></tr>
+  <tr><td>getters</td><td><code>computed()</code></td><td>Valores derivados. Ex.: <code>estaLogado</code> = "tem user?".</td></tr>
+  <tr><td>actions</td><td><code>function</code> (pode ser <code>async</code>)</td><td>O que muda o estado. Ex.: <code>entrarComGoogle()</code>.</td></tr>
+</table>
+<p>Usamos o estilo <strong>"setup store"</strong> (uma função que retorna tudo) porque é idêntico ao que já
+  sabemos de <code>&lt;script setup&gt;</code>. Existe também o estilo "options" (objeto), mas vamos de setup.</p>
+
+<h2>3. O que vamos construir</h2>
+<div class="mockup">
+  <div class="mockup-bar">Deslogado — Home</div>
+  <div class="mockup-body">
+    <div class="mockup-appbar">&#x1F510; Pinia + Firebase &nbsp; Início &nbsp; Sobre &nbsp;&nbsp;&nbsp;&nbsp; <span style="float:right;" class="mockup-btn out">&#x1F310; Entrar com Google</span></div>
+    <strong>Pinia + Firebase &#x1F525;</strong><br>
+    <span style="color:#6b7280;">Estado global com Pinia e login social com a conta Google.</span><br><br>
+    <span class="mockup-btn">&#x1F310; Entrar com Google</span>
+  </div>
+</div>
+<div class="mockup">
+  <div class="mockup-bar">Logado — app-bar com avatar + Perfil (rota protegida)</div>
+  <div class="mockup-body">
+    <div class="mockup-appbar">&#x1F510; Pinia + Firebase &nbsp; Início &nbsp; Sobre &nbsp;&nbsp;&nbsp;&nbsp; <span style="float:right;" class="avatar">&#x1F642;</span></div>
+    <span class="avatar" style="width:60px;height:60px;line-height:60px;font-size:28pt;">&#x1F642;</span><br>
+    <strong>Maria da Silva</strong><br>
+    <span style="color:#6b7280;">maria@gmail.com</span><br>
+    <span class="mockup-btn out" style="font-size:8pt;">UID: aBc123...</span><br><br>
+    <span class="mockup-btn" style="background:#ef4444;">Sair da conta</span>
+  </div>
+</div>
+
+<div class="pagebreak"></div>
+
+<h2>4. Passo a passo (a aula ao vivo)</h2>
+
+<div class="step">
+  <div class="step-head"><span class="step-num">1</span><span class="step-title">Criar o projeto e instalar Pinia + Firebase</span><span class="step-time">~5 min</span></div>
+  <p>Crie um projeto Vuetify novo (igual às aulas anteriores) e adicione as duas bibliotecas de hoje:</p>
+<pre><span class="com"># cria o projeto base (Vue 3 + Vite + Vuetify) — escolha "Recommended" + bun</span>
+bun create vuetify app-pinia-firebase
+<span class="kw">cd</span> app-pinia-firebase
+
+<span class="com"># as duas estrelas de hoje:</span>
+bun add pinia firebase</pre>
+  <div class="tip"><strong>Atalho:</strong> a pasta <code>03-06-2026/</code> já tem tudo pronto. Dá para abrir ela e só rodar <code>bun install</code>. Mas na aula vale construir do zero para fixar.</div>
+</div>
+
+<div class="step">
+  <div class="step-head"><span class="step-num">2</span><span class="step-title">Ligar o Pinia no app</span><span class="step-time">~3 min</span></div>
+  <p>O Pinia precisa ser registrado no app — e <strong>antes do router</strong>, porque o guarda de rota vai usar a store.</p>
+  <div class="filelabel">src/plugins/index.js</div>
+<pre><span class="kw">import</span> { createPinia } <span class="kw">from</span> <span class="str">'pinia'</span>
+<span class="kw">import</span> vuetify <span class="kw">from</span> <span class="str">'./vuetify'</span>
+<span class="kw">import</span> router <span class="kw">from</span> <span class="str">'@/router'</span>
+
+<span class="kw">export function</span> <span class="fn">registerPlugins</span> (app) {
+  app.<span class="fn">use</span>(<span class="fn">createPinia</span>())  <span class="com">// 1º: estado global</span>
+  app.<span class="fn">use</span>(vuetify)         <span class="com">// 2º: UI</span>
+  app.<span class="fn">use</span>(router)          <span class="com">// 3º: rotas (usam a store!)</span>
+}</pre>
+  <div class="warn"><strong>Ordem importa:</strong> se o router subir antes do Pinia, o guarda de rota chama <code>useAuthStore()</code> sem um Pinia ativo e o app quebra com <em>"getActivePinia() was called but there was no active Pinia"</em>.</div>
+</div>
+
+<div class="step">
+  <div class="step-head"><span class="step-num">3</span><span class="step-title">Criar o projeto no Firebase Console</span><span class="step-time">~12 min</span></div>
+  <p>Tudo no navegador, sem código. Vá em <code>console.firebase.google.com</code>:</p>
+  <ol class="clicks">
+    <li><strong>Adicionar projeto</strong> &rarr; dê um nome (ex.: <em>fmds-aula</em>) &rarr; pode desligar o Google Analytics &rarr; Criar.</li>
+    <li>No menu lateral: <strong>Build &rarr; Authentication &rarr; Get started</strong>.</li>
+    <li>Aba <strong>Sign-in method</strong> &rarr; clique em <strong>Google</strong> &rarr; <strong>Ativar (Enable)</strong> &rarr; escolha um e-mail de suporte &rarr; <strong>Salvar</strong>.</li>
+    <li>Agora registre um app Web: ícone de engrenagem <span class="kbd">&#9881; Configurações do projeto</span> &rarr; role até <strong>Seus apps</strong> &rarr; clique no ícone <strong>Web <code>&lt;/&gt;</code></strong>.</li>
+    <li>Dê um apelido ao app &rarr; <strong>Registrar app</strong>. O Firebase mostra um objeto <code>firebaseConfig</code> — <strong>copie esses valores</strong> (vamos usar já já).</li>
+    <li>Confira os domínios liberados: <strong>Authentication &rarr; Settings &rarr; Authorized domains</strong>. O <code>localhost</code> já costuma vir na lista — se não estiver, adicione.</li>
+  </ol>
+  <div class="warn"><strong>Erro clássico nº 1:</strong> esquecer de <u>ativar</u> o provedor Google (passo 3). Sem isso, o login abre o popup e morre com <code>auth/operation-not-allowed</code>.</div>
+</div>
+
+<div class="step">
+  <div class="step-head"><span class="step-num">4</span><span class="step-title">Guardar a config no .env e inicializar o Firebase</span><span class="step-time">~6 min</span></div>
+  <p>Crie um arquivo <code>.env</code> na raiz com os valores que você copiou (prefixo <code>VITE_</code> é obrigatório para o Vite expor a variável):</p>
+  <div class="filelabel">.env</div>
+<pre>VITE_FIREBASE_API_KEY=AIzaSy...suachave
+VITE_FIREBASE_AUTH_DOMAIN=fmds-aula.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=fmds-aula
+VITE_FIREBASE_APP_ID=1:123...:web:abc...</pre>
+  <p>Agora um arquivo que inicializa o Firebase <strong>uma única vez</strong> e exporta o que precisamos:</p>
+  <div class="filelabel">src/firebase.js</div>
+<pre><span class="kw">import</span> { initializeApp } <span class="kw">from</span> <span class="str">'firebase/app'</span>
+<span class="kw">import</span> { getAuth, GoogleAuthProvider } <span class="kw">from</span> <span class="str">'firebase/auth'</span>
+
+<span class="kw">const</span> firebaseConfig = {
+  apiKey:     import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId:  import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  appId:      import.meta.env.VITE_FIREBASE_APP_ID,
+}
+
+<span class="kw">const</span> app = <span class="fn">initializeApp</span>(firebaseConfig)
+
+<span class="kw">export const</span> auth = <span class="fn">getAuth</span>(app)
+<span class="kw">export const</span> googleProvider = <span class="kw">new</span> <span class="fn">GoogleAuthProvider</span>()</pre>
+  <div class="tip"><strong>Sobre "segredo":</strong> essas chaves Web <u>não são secretas</u> — são identificadores públicos do projeto (vão no bundle do navegador de qualquer forma). A segurança vem dos <em>domínios autorizados</em> e das <em>regras</em>. Usamos <code>.env</code> por organização e por hábito profissional. Lembre de pôr <code>.env</code> no <code>.gitignore</code>.</div>
+</div>
+
+<div class="step">
+  <div class="step-head"><span class="step-num">5</span><span class="step-title">A store de autenticação (o coração da aula)</span><span class="step-time">~12 min</span></div>
+  <p>Aqui o Pinia e o Firebase se encontram. A store guarda o <code>user</code>, expõe getters prontos e
+    tem as actions de entrar/sair. O segredo é o <code>onAuthStateChanged</code>: o Firebase <strong>nos avisa
+    sozinho</strong> sempre que o login muda (inclusive ao recarregar a página).</p>
+  <div class="filelabel">src/stores/auth.js</div>
+<pre><span class="kw">import</span> { defineStore } <span class="kw">from</span> <span class="str">'pinia'</span>
+<span class="kw">import</span> { ref, computed } <span class="kw">from</span> <span class="str">'vue'</span>
+<span class="kw">import</span> { signInWithPopup, signOut, onAuthStateChanged } <span class="kw">from</span> <span class="str">'firebase/auth'</span>
+<span class="kw">import</span> { auth, googleProvider } <span class="kw">from</span> <span class="str">'@/firebase'</span>
+
+<span class="kw">export const</span> useAuthStore = <span class="fn">defineStore</span>(<span class="str">'auth'</span>, () =&gt; {
+  <span class="com">// STATE</span>
+  <span class="kw">const</span> user = <span class="fn">ref</span>(<span class="kw">null</span>)        <span class="com">// usuário do Firebase, ou null</span>
+  <span class="kw">const</span> carregando = <span class="fn">ref</span>(<span class="kw">true</span>)  <span class="com">// true até o Firebase responder</span>
+  <span class="kw">const</span> erro = <span class="fn">ref</span>(<span class="kw">null</span>)
+
+  <span class="com">// GETTERS (computed = sempre reativo)</span>
+  <span class="kw">const</span> estaLogado = <span class="fn">computed</span>(() =&gt; user.value !== <span class="kw">null</span>)
+  <span class="kw">const</span> nome  = <span class="fn">computed</span>(() =&gt; user.value?.displayName ?? <span class="str">'Visitante'</span>)
+  <span class="kw">const</span> email = <span class="fn">computed</span>(() =&gt; user.value?.email ?? <span class="str">''</span>)
+  <span class="kw">const</span> foto  = <span class="fn">computed</span>(() =&gt; user.value?.photoURL ?? <span class="str">''</span>)
+
+  <span class="com">// Promise que resolve quando o Firebase responder pela 1ª vez.</span>
+  <span class="com">// O guarda de rota espera por ela (resolve o problema do F5).</span>
+  <span class="kw">let</span> resolverPronto
+  <span class="kw">const</span> pronto = <span class="kw">new</span> <span class="fn">Promise</span>((r) =&gt; { resolverPronto = r })
+
+  <span class="com">// O Firebase chama isto sozinho: ao entrar, ao sair e ao recarregar.</span>
+  <span class="fn">onAuthStateChanged</span>(auth, (u) =&gt; {
+    user.value = u
+    carregando.value = <span class="kw">false</span>
+    <span class="fn">resolverPronto</span>()
+  })
+
+  <span class="com">// ACTIONS</span>
+  <span class="kw">async function</span> <span class="fn">entrarComGoogle</span> () {
+    erro.value = <span class="kw">null</span>
+    <span class="kw">try</span> {
+      <span class="kw">await</span> <span class="fn">signInWithPopup</span>(auth, googleProvider)
+      <span class="com">// não setamos user aqui: o onAuthStateChanged faz isso</span>
+    } <span class="kw">catch</span> (e) {
+      erro.value = e.message
+    }
+  }
+
+  <span class="kw">async function</span> <span class="fn">sair</span> () {
+    <span class="kw">await</span> <span class="fn">signOut</span>(auth)
+  }
+
+  <span class="kw">return</span> { user, carregando, erro, estaLogado, nome, email, foto, pronto, entrarComGoogle, sair }
+})</pre>
+  <div class="key"><strong>Ideia-chave:</strong> ninguém "seta o usuário na mão". A action só dispara o popup; quem atualiza o estado é o <code>onAuthStateChanged</code>. Uma fonte da verdade só.</div>
+</div>
+
+<div class="step">
+  <div class="step-head"><span class="step-num">6</span><span class="step-title">O componente de login no app-bar</span><span class="step-time">~8 min</span></div>
+  <p>Um componente que mostra "Entrar com Google" quando deslogado, e o avatar + menu quando logado.</p>
+  <div class="filelabel">src/components/UserMenu.vue</div>
+<pre><span class="tag">&lt;template&gt;</span>
+  <span class="com">&lt;!-- ainda carregando? mostra spinner --&gt;</span>
+  <span class="tag">&lt;v-progress-circular</span> <span class="attr">v-if</span>=<span class="str">"auth.carregando"</span> indeterminate <span class="attr">size</span>=<span class="str">"24"</span> <span class="tag">/&gt;</span>
+
+  <span class="com">&lt;!-- deslogado: botão de entrar --&gt;</span>
+  <span class="tag">&lt;v-btn</span> <span class="attr">v-else-if</span>=<span class="str">"!auth.estaLogado"</span> <span class="attr">prepend-icon</span>=<span class="str">"mdi-google"</span>
+         <span class="attr">@click</span>=<span class="str">"auth.entrarComGoogle"</span><span class="tag">&gt;</span>Entrar com Google<span class="tag">&lt;/v-btn&gt;</span>
+
+  <span class="com">&lt;!-- logado: avatar que abre um menu --&gt;</span>
+  <span class="tag">&lt;v-menu</span> <span class="attr">v-else</span><span class="tag">&gt;</span>
+    <span class="tag">&lt;template</span> <span class="attr">#activator</span>=<span class="str">"{ props }"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;v-btn</span> <span class="attr">v-bind</span>=<span class="str">"props"</span> icon<span class="tag">&gt;</span>
+        <span class="tag">&lt;v-avatar</span> <span class="attr">size</span>=<span class="str">"36"</span><span class="tag">&gt;&lt;v-img</span> <span class="attr">:src</span>=<span class="str">"auth.foto"</span> <span class="tag">/&gt;&lt;/v-avatar&gt;</span>
+      <span class="tag">&lt;/v-btn&gt;</span>
+    <span class="tag">&lt;/template&gt;</span>
+    <span class="tag">&lt;v-list&gt;</span>
+      <span class="tag">&lt;v-list-item</span> <span class="attr">:title</span>=<span class="str">"auth.nome"</span> <span class="attr">:subtitle</span>=<span class="str">"auth.email"</span> <span class="tag">/&gt;</span>
+      <span class="tag">&lt;v-divider</span> <span class="tag">/&gt;</span>
+      <span class="tag">&lt;v-list-item</span> <span class="attr">to</span>=<span class="str">"/perfil"</span> <span class="attr">title</span>=<span class="str">"Meu perfil"</span> <span class="attr">prepend-icon</span>=<span class="str">"mdi-account"</span> <span class="tag">/&gt;</span>
+      <span class="tag">&lt;v-list-item</span> <span class="attr">title</span>=<span class="str">"Sair"</span> <span class="attr">prepend-icon</span>=<span class="str">"mdi-logout"</span> <span class="attr">@click</span>=<span class="str">"auth.sair"</span> <span class="tag">/&gt;</span>
+    <span class="tag">&lt;/v-list&gt;</span>
+  <span class="tag">&lt;/v-menu&gt;</span>
+<span class="tag">&lt;/template&gt;</span>
+
+<span class="tag">&lt;script setup&gt;</span>
+<span class="kw">import</span> { useAuthStore } <span class="kw">from</span> <span class="str">'@/stores/auth'</span>
+<span class="kw">const</span> auth = <span class="fn">useAuthStore</span>()  <span class="com">// auth.estaLogado/nome no template são reativos</span>
+<span class="tag">&lt;/script&gt;</span></pre>
+  <p>E no <code>App.vue</code>, basta pôr o componente na <code>v-app-bar</code>:</p>
+  <div class="filelabel">src/App.vue (trecho)</div>
+<pre><span class="tag">&lt;v-app-bar</span> <span class="attr">color</span>=<span class="str">"primary"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;v-app-bar-title&gt;</span>&#x1F510; Pinia + Firebase<span class="tag">&lt;/v-app-bar-title&gt;</span>
+  <span class="tag">&lt;v-btn</span> <span class="attr">to</span>=<span class="str">"/"</span> <span class="attr">variant</span>=<span class="str">"text"</span><span class="tag">&gt;</span>Início<span class="tag">&lt;/v-btn&gt;</span>
+  <span class="tag">&lt;v-spacer</span> <span class="tag">/&gt;</span>
+  <span class="tag">&lt;UserMenu</span> <span class="tag">/&gt;</span>
+<span class="tag">&lt;/v-app-bar&gt;</span></pre>
+  <p><strong>Momento "uau" da aula:</strong> rode <code>bun dev</code>, clique em <em>Entrar com Google</em>, escolha a conta — e o avatar aparece no canto. Login social sem backend nenhum. &#x1F389;</p>
+</div>
+
+<div class="step">
+  <div class="step-head"><span class="step-num">7</span><span class="step-title">Proteger a rota /perfil (guarda de navegação)</span><span class="step-time">~10 min</span></div>
+  <p>Marcamos a rota como "só para logados" com <code>meta.requiresAuth</code> e barramos no <code>beforeEach</code>.</p>
+  <div class="filelabel">src/router/index.js</div>
+<pre><span class="kw">import</span> { createRouter, createWebHistory } <span class="kw">from</span> <span class="str">'vue-router'</span>
+<span class="kw">import</span> { useAuthStore } <span class="kw">from</span> <span class="str">'@/stores/auth'</span>
+
+<span class="kw">const</span> routes = [
+  { path: <span class="str">'/'</span>,       component: () =&gt; <span class="fn">import</span>(<span class="str">'@/pages/Home.vue'</span>) },
+  { path: <span class="str">'/perfil'</span>, component: () =&gt; <span class="fn">import</span>(<span class="str">'@/pages/Perfil.vue'</span>),
+    meta: { requiresAuth: <span class="kw">true</span> } },           <span class="com">// &lt;-- só logados</span>
+  { path: <span class="str">'/sobre'</span>,  component: () =&gt; <span class="fn">import</span>(<span class="str">'@/pages/Sobre.vue'</span>) },
+]
+
+<span class="kw">const</span> router = <span class="fn">createRouter</span>({ history: <span class="fn">createWebHistory</span>(), routes })
+
+router.<span class="fn">beforeEach</span>(<span class="kw">async</span> (to) =&gt; {
+  <span class="kw">const</span> auth = <span class="fn">useAuthStore</span>()
+  <span class="kw">await</span> auth.pronto                 <span class="com">// espera o Firebase restaurar a sessão</span>
+  <span class="kw">if</span> (to.meta.requiresAuth &amp;&amp; !auth.estaLogado) {
+    <span class="kw">return</span> <span class="str">'/'</span>                       <span class="com">// não logado? volta pra Home</span>
+  }
+})
+
+<span class="kw">export default</span> router</pre>
+  <div class="warn"><strong>Erro clássico nº 2 (o F5):</strong> sem o <code>await auth.pronto</code>, ao recarregar a página em <code>/perfil</code> o guarda roda <em>antes</em> de o Firebase restaurar a sessão — então <code>estaLogado</code> ainda é <code>false</code> e o usuário <u>logado</u> é chutado pra Home. Esperar a Promise resolve isso.</div>
+</div>
+
+<div class="step">
+  <div class="step-head"><span class="step-num">8</span><span class="step-title">A página de perfil + storeToRefs</span><span class="step-time">~6 min</span></div>
+  <p>Boa hora para ensinar <code>storeToRefs</code>: para desestruturar estado/getters <u>sem perder a reatividade</u>.</p>
+  <div class="filelabel">src/pages/Perfil.vue (trecho)</div>
+<pre><span class="tag">&lt;script setup&gt;</span>
+<span class="kw">import</span> { storeToRefs } <span class="kw">from</span> <span class="str">'pinia'</span>
+<span class="kw">import</span> { useAuthStore } <span class="kw">from</span> <span class="str">'@/stores/auth'</span>
+
+<span class="kw">const</span> auth = <span class="fn">useAuthStore</span>()
+<span class="com">// CERTO: mantém a reatividade ao desestruturar</span>
+<span class="kw">const</span> { user, nome, email, foto } = <span class="fn">storeToRefs</span>(auth)
+
+<span class="com">// ERRADO: const { nome } = auth  --&gt; vira valor "congelado", não atualiza!</span>
+<span class="tag">&lt;/script&gt;</span></pre>
+  <div class="tip"><strong>Regra de bolso:</strong> <em>state e getters</em> &rarr; via <code>storeToRefs</code>. <em>actions</em> (funções) &rarr; pode pegar direto da store (<code>auth.sair</code>), elas não perdem reatividade.</div>
+</div>
+
+<div class="step">
+  <div class="step-head"><span class="step-num">9</span><span class="step-title">Testar o fluxo completo</span><span class="step-time">~5 min</span></div>
+  <ul class="tight">
+    <li>Deslogado: a Home mostra "Entrar com Google"; tente abrir <code>/perfil</code> na barra de endereço &rarr; é redirecionado pra Home. &#x2705;</li>
+    <li>Clique em entrar &rarr; escolha a conta &rarr; avatar aparece, nome/e-mail no menu. &#x2705;</li>
+    <li>Abra <code>/perfil</code> &rarr; agora entra. Dê <span class="kbd">F5</span> &rarr; continua logado (sem ser expulso). &#x2705;</li>
+    <li>Clique em <em>Sair</em> &rarr; volta a deslogado, a UI inteira reage sozinha. &#x2705;</li>
+  </ul>
+</div>
+
+<h2>5. Troubleshooting — os erros que vão aparecer</h2>
+<table class="agenda">
+  <tr><th>Erro no console</th><th>Causa provável</th><th>Como resolver</th></tr>
+  <tr><td>auth/operation-not-allowed</td><td>Provedor Google não ativado.</td><td>Authentication &rarr; Sign-in method &rarr; ativar Google.</td></tr>
+  <tr><td>auth/unauthorized-domain</td><td>Domínio não autorizado.</td><td>Authentication &rarr; Settings &rarr; Authorized domains &rarr; add <code>localhost</code>.</td></tr>
+  <tr><td>auth/invalid-api-key</td><td><code>.env</code> errado/ausente ou esqueceu de reiniciar o Vite.</td><td>Confira o <code>.env</code> e <strong>reinicie</strong> o <code>bun dev</code> (o Vite só lê o .env no boot).</td></tr>
+  <tr><td>auth/popup-blocked</td><td>Navegador bloqueou o popup.</td><td>Liberar pop-ups do <code>localhost</code> e clicar de novo (gesto do usuário).</td></tr>
+  <tr><td>popup-closed-by-user</td><td>Fechou a janela antes de concluir.</td><td>Normal — só tentar de novo. Já tratamos no <code>catch</code>.</td></tr>
+  <tr><td>no active Pinia</td><td>Router registrado antes do Pinia.</td><td>No <code>plugins/index.js</code>, <code>createPinia()</code> vem primeiro.</td></tr>
+</table>
+
+<h2>6. Cola rápida</h2>
+<table class="agenda">
+  <tr><th>Preciso…</th><th>Código</th></tr>
+  <tr><td>Definir uma store</td><td><code>defineStore('nome', () =&gt; { ... return {...} })</code></td></tr>
+  <tr><td>Usar a store</td><td><code>const s = useNomeStore()</code></td></tr>
+  <tr><td>Desestruturar mantendo reatividade</td><td><code>const { x } = storeToRefs(s)</code></td></tr>
+  <tr><td>Login com Google</td><td><code>signInWithPopup(auth, googleProvider)</code></td></tr>
+  <tr><td>Logout</td><td><code>signOut(auth)</code></td></tr>
+  <tr><td>Ouvir login/logout</td><td><code>onAuthStateChanged(auth, (u) =&gt; { ... })</code></td></tr>
+</table>
+
+<div class="pagebreak"></div>
+
+<h2>7. Exercício — para entregar</h2>
+
+<div class="exercise">
+  <div class="exercise-head">&#x1F4DD; Atividade: "Minha área logada" (Pinia + login Google)</div>
+  <div class="exercise-body">
+    <div style="margin-bottom:8px; font-size:9.5pt;">
+      <strong>Valor:</strong> 1,0 ponto (compõe a Nota 2) &nbsp;&bull;&nbsp;
+      <strong>Modalidade:</strong> individual ou em dupla &nbsp;&bull;&nbsp;
+      <strong>Entrega:</strong> SIGAA até <strong>23h59 de 09/06/2026</strong> &nbsp;&bull;&nbsp;
+      <strong>Base:</strong> evolua o projeto da aula de hoje.
+    </div>
+
+    <p><strong>Contexto:</strong> use o app de hoje (login com Google + Pinia) como ponto de partida e adicione uma
+      <strong>área pessoal protegida</strong> com dados que pertencem ao usuário logado — gerenciados por uma
+      <strong>segunda store Pinia</strong>, sua. Escolha <u>um tema</u>: lista de tarefas, favoritos de filmes,
+      anotações, metas de estudo, lista de compras… (declare o tema no <code>README</code>).</p>
+
+    <h3 style="margin-top:6px;">Requisitos</h3>
+    <ul class="tight">
+      <li><strong>R1 — Login Google funcionando</strong> (reaproveitado da aula): app-bar com "Entrar"/avatar e "Sair".</li>
+      <li><strong>R2 — Segunda store Pinia</strong> própria (ex.: <code>stores/itens.js</code>) com <em>state</em>, pelo menos <strong>um getter</strong> (ex.: <code>total</code>) e <em>actions</em> de <strong>adicionar</strong> e <strong>remover</strong>.</li>
+      <li><strong>R3 — Rota protegida</strong> <code>/minha-area</code> (com <code>meta.requiresAuth</code> + guarda) que só abre logado e onde o usuário <strong>cadastra e remove</strong> itens do seu tema.</li>
+      <li><strong>R4 — Personalização</strong>: a área mostra o <strong>nome</strong> e a <strong>foto</strong> do usuário (vindos da store de auth) — ex.: <em>"Tarefas de Maria"</em>.</li>
+      <li><strong>R5 — Vuetify</strong>: a interface usa pelo menos 4 componentes Vuetify (ex.: <code>v-text-field</code>, <code>v-btn</code>, <code>v-list</code>/<code>v-card</code>, <code>v-icon</code>) e o tema com cores próprias.</li>
+      <li><strong>R6 — storeToRefs</strong>: ao consumir a store na página, desestruture state/getters com <code>storeToRefs</code> (sem quebrar a reatividade).</li>
+    </ul>
+
+    <h3 style="margin-top:6px;">Desafio extra (opcional, +0,2 na qualidade)</h3>
+    <p style="font-size:9.5pt; margin:4px 0;">Faça os itens <strong>sobreviverem ao F5</strong> salvando a lista no <code>localStorage</code>
+      (dica: um <code>watch</code> na store gravando, e leitura na inicialização). Bônus se a lista for separada por usuário (use o <code>uid</code> na chave).</p>
+
+    <h3 style="margin-top:6px;">Critérios de avaliação</h3>
+    <table class="criteria">
+      <tr><th>Critério</th><th>O que avaliamos</th><th class="pts">Pontos</th></tr>
+      <tr><td>Login + rota protegida</td><td>Google funcionando e <code>/minha-area</code> barrando visitante (R1, R3).</td><td class="pts">0,30</td></tr>
+      <tr><td>Store Pinia própria</td><td>State + getter + actions add/remove, bem organizada (R2).</td><td class="pts">0,30</td></tr>
+      <tr><td>Personalização do usuário</td><td>Nome/foto do logado aparecem na área (R4) + <code>storeToRefs</code> (R6).</td><td class="pts">0,20</td></tr>
+      <tr><td>Vuetify &amp; capricho</td><td>Componentes Vuetify, tema, sem erros no console (R5).</td><td class="pts">0,20</td></tr>
+      <tr class="total"><td colspan="2" style="text-align:right;">TOTAL</td><td class="pts" style="color:white;">1,00</td></tr>
+    </table>
+
+    <div class="warn" style="margin-top:8px;"><strong>Entrega:</strong> zipe o projeto <u>sem a pasta <code>node_modules</code></u> e <u>sem o <code>.env</code></u>
+      (suas chaves ficam fora!). No <code>README.md</code>: tema escolhido, integrantes e como rodar. Nome do arquivo:
+      <code>fmds_pinia_NOME1_NOME2.zip</code>. Só uma pessoa da dupla envia.</div>
+    <div class="tip"><strong>Ordem sugerida:</strong> (1) app de hoje rodando &rarr; (2) rota <code>/minha-area</code> protegida vazia &rarr;
+      (3) segunda store com add/remove &rarr; (4) formulário + lista lendo da store &rarr; (5) nome/foto do usuário &rarr; (6) tema e capricho.</div>
+  </div>
+</div>
+
+<!-- MEME -->
+<div class="meme-section">
+  <h2>Bônus moral — o meme do estado global</h2>
+  <div class="meme">
+    <div class="meme-row">
+      <div class="meme-panel" style="background:#fee2e2;">
+        <div class="meme-face">&#x1F605;</div>
+        <div class="meme-caption">Aula passada:<br>"vou guardar o<br>estado numa<br>variável global"</div>
+      </div>
+      <div class="meme-panel" style="background:#dcfce7;">
+        <div class="meme-face">&#x1F60E;</div>
+        <div class="meme-caption">Hoje: "uso<br>Pinia, sou um<br>profissional"</div>
+      </div>
+    </div>
+    <div class="meme-row">
+      <div class="meme-panel" style="background:#fef3c7; flex:2;">
+        <div class="meme-face">&#x1F480;</div>
+        <div class="meme-caption" style="font-size:10pt;">
+          "Implementei login, OAuth, sessão e refresh em 5 minutos"<br>
+          <em>(o Firebase fez 99% &mdash; eu só cliquei em 'Ativar Google')</em>
+        </div>
+      </div>
+    </div>
+    <div class="meme-row">
+      <div class="meme-panel" style="background:#e0e7ff;">
+        <div class="meme-face">&#x1F635;&#x200D;&#x1F4AB;</div>
+        <div class="meme-caption">"Por que ao dar<br>F5 ele me<br>desloga?!"</div>
+      </div>
+      <div class="meme-panel" style="background:#fce7f3;">
+        <div class="meme-face">&#x1F9E0;</div>
+        <div class="meme-caption">esqueceu o<br>await auth.pronto<br>no guarda</div>
+      </div>
+    </div>
+  </div>
+  <div class="meme-caption-2">
+    "Autenticação é fácil: são só 3 linhas de código e 47 cliques no console." — Provérbio Firebase
+  </div>
+</div>
+
+<div class="footer-note">
+  Bom código, pessoal! &nbsp;&#x2726;&nbsp; Projeto-exemplo completo na pasta <code>03-06-2026/</code> &nbsp;&#x2726;&nbsp; Exercício no SIGAA até <strong>23h59 de 09/06/2026</strong>.
+</div>
+
+</body>
+</html>
