@@ -15,8 +15,8 @@ import vuetify from './vuetify'
 import firebaseApp from './firebase.js';
 
 export function registerPlugins(app: App) {
+    app.use(createPinia());
     app.use(firebaseApp);
     app.use(vuetify)
-    app.use(createPinia());
     app.use(router);
 }
