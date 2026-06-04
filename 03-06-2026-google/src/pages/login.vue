@@ -26,15 +26,15 @@
             </v-btn>
 
             <v-divider class="mb-8"></v-divider>
-            <v-btn class="mb-8" color="blue" size="large" variant="outlined" block>
+            <v-btn @click="userStore.loginWithGoogle()" class="mb-8" color="blue" size="large" variant="outlined" block>
                 <v-icon icon="mdi-google" class="me-2"></v-icon>
-                Log in with Google
+                Login com Google
             </v-btn>
             <v-divider class="mb-8"></v-divider>
 
             <v-card-text class="text-center">
                 <a class="text-blue text-decoration-none" href="#" rel="noopener noreferrer" target="_blank">
-                    Sign up now <v-icon icon="mdi-chevron-right"></v-icon>
+                    Cadastre-se <v-icon icon="mdi-chevron-right"></v-icon>
                 </a>
             </v-card-text>
         </v-card>
@@ -42,6 +42,9 @@
 </template>
 <script setup>
 import { ref } from 'vue'
-
+// importar o meu user store
+import { useUserStore } from '@/stores/user'
+// criar uma instância do user store
+const userStore = useUserStore()
 const visible = ref(false)
 </script>
