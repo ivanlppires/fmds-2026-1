@@ -1,20 +1,24 @@
 import express from 'express';
+import * as clientController from '../controllers/clientController.js'
+
+
 const router = express.Router();
 
-// Arquivo de roda para clientes /client
+// Rotas de /client
 
-const dbClients = [];
+// Create
+router.post('/', clientController.addClient);
 
-/* FAZER UM CRUD */
+// Read All
+router.get('/', clientController.getClients)
 
-// CREATE
-router.post('/', (req, res) => {
-    const data = req.body;
-    dbClients.push(data)
-    res.status(201).json({'message':`${data?.nome} cadastrado com sucesso`});
-});
-// READ
+// Read One
+router.get('/:id', clientController.getClient);
+
 // UPDATE
+router.put('/:id', clientController.updateClient);
+
 // DELETE
+router.delete('/:id', clientController.deleteClient);
 
 export default router;
