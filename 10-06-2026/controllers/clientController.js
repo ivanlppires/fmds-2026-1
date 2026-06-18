@@ -1,5 +1,10 @@
 const dbClient = [];
 
+// dados mockados para teste
+dbClient.push({ id: 1, nome: 'Maria', email: 'maria@mail.com' });
+dbClient.push({ id: 2, nome: 'João', email: 'joao@mail.com' });
+dbClient.push({ id: 3, nome: 'Ana', email: 'ana@gmail.com' });
+dbClient.push({ id: 4, nome: 'Pedro', email: 'pedro@mail.com' });
 
 // Create
 export const addClient = (req, res) => {

@@ -1,5 +1,6 @@
 import express from 'express';
 import * as clientController from '../controllers/clientController.js'
+import { verifyToken } from '../firebase/firebase.js';
 
 
 const router = express.Router();
@@ -10,7 +11,7 @@ const router = express.Router();
 router.post('/', clientController.addClient);
 
 // Read All
-router.get('/', clientController.getClients)
+router.get('/', verifyToken, clientController.getClients);
 
 // Read One
 router.get('/:id', clientController.getClient);
